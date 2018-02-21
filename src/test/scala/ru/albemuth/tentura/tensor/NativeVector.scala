@@ -173,14 +173,6 @@ class NativeVector(v: Array[Float]) {
     result
   }
 
-  def sigmoid(): NativeVector = {
-    val result = emptyVector(length)
-    for (i <- data.indices) {
-      result.data(i) = (1.0 / (1.0 + Math.exp(-data(i)))).toFloat
-    }
-    result
-  }
-
   def pow2(): NativeVector = {
     val result = emptyVector(length)
     for (i <- data.indices) {
@@ -205,14 +197,6 @@ class NativeVector(v: Array[Float]) {
     }
   }
 
-  def exp(): NativeVector = {
-    val result = emptyVector(length)
-    for (i <- data.indices) {
-      result.data(i) = Math.exp(data(i)).toFloat
-    }
-    result
-  }
-
   def sum(): Float = {
     data.sum
   }
@@ -224,9 +208,7 @@ object NativeVector {
   def apply(v: Array[Float]) = new NativeVector(v)
 
   def vector(length: Int): NativeVector = {
-    val data = emptyVectorData(length)
-    fillVectorData(data)
-    NativeVector(data)
+    NativeVector(vectorData(length))
   }
 
   def emptyVector(length: Int): NativeVector = {
@@ -246,7 +228,7 @@ object NativeVector {
   def fillVectorData(data: Array[Float]): Unit = {
     val rnd = new Random
     for (i <- data.indices) {
-      data(i) = rnd.nextGaussian.toFloat
+      data(i) = rnd.nextGaussian.toFloat * 100
     }
   }
 
@@ -267,6 +249,29 @@ object NativeVector {
 
       for (i <- vector.data.indices) {
         result.data(i) = scalar / vector.data(i)
+      }
+
+      result
+    }
+  }
+
+  implicit class DoubleFloat(scalar: Double) {
+
+    def -(vector: NativeVector): NativeVector = {
+      val result = emptyVector(vector.length)
+
+      for (i <- vector.data.indices) {
+        result.data(i) = scalar.toFloat - vector.data(i)
+      }
+
+      result
+    }
+
+    def /(vector: NativeVector): NativeVector = {
+      val result = emptyVector(vector.length)
+
+      for (i <- vector.data.indices) {
+        result.data(i) = scalar.toFloat / vector.data(i)
       }
 
       result

@@ -4,7 +4,7 @@ import jcuda.{Pointer, Sizeof}
 import jcuda.driver.{CUdeviceptr, JCudaDriver}
 import org.scalameter.{Key, MeasureBuilder, Warmer, config}
 import ru.albemuth.tentura.kernel.JCudaKernel
-import ru.albemuth.tentura.tensor.kernel.MatrixKernel
+import ru.albemuth.tentura.tensor.kernel.matrix.MatrixKernel
 import ru.albemuth.tentura.tensor.{Matrix, NativeMatrix, NativeVector}
 
 /**

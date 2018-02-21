@@ -5,7 +5,9 @@ import jcuda.Pointer
 import jcuda.driver.CUdeviceptr
 import ru.albemuth.tentura.DeviceVar
 import ru.albemuth.tentura.kernel.JCudaKernel.{devicePtr, pointer}
-import ru.albemuth.tentura.tensor.kernel._
+import ru.albemuth.tentura.kernel.{JCudaKernel, KernelTemplate}
+import ru.albemuth.tentura.tensor.MathFunctions.{pow, pow2, powd, pow2d}
+import ru.albemuth.tentura.tensor.kernel.matrix._
 
 import scala.reflect.ClassTag
 
@@ -28,13 +30,14 @@ class Matrix[T: ClassTag](val rows: Int, val columns: Int, override protected[te
   def apply(i: Int, j: Int): T = data(i * columns + j)
 
   def apply(columnsIndices: Vector[Int]): Vector[T] = {
-    val result = resultsCache.result[T, Vector[T]](matrixColumnsValues, columns, new Vector[T](rows))
+    val kernel = matrixColumnsValues.kernel[T]
+    val result = resultsCache.result[T, Vector[T]](kernel, columns, new Vector[T](rows))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(columnsIndices.deviceDataPtr), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixColumnsValues.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
@@ -43,124 +46,251 @@ class Matrix[T: ClassTag](val rows: Int, val columns: Int, override protected[te
     Matrix.values(rows, columns)(data)
   }
 
-  protected[tensor] def result(kernel: MatrixKernel, resultKey: Any, result: => Matrix[T]): Matrix[T] = {
-    resultsCache.result[T, Matrix[T]](kernel, resultKey, result)
+  protected[tensor] def result[R: ClassTag](kernel: JCudaKernel, resultKey: Any, result: => Matrix[R]): Matrix[R] = {
+    resultsCache.result[R, Matrix[R]](kernel, resultKey, result)
   }
 
   def +(matrix: Matrix[T]): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixAddMatrix, matrix, new Matrix[T](rows, columns))
+    val kernel = matrixAddMatrix.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, matrix, new Matrix[T](rows, columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(matrix.deviceDataPtr), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixAddMatrix.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
 
   def +(vector: Vector[T]): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixAddRow, vector, new Matrix[T](rows, columns))
+    val kernel = matrixAddRow.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, vector, new Matrix[T](rows, columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(vector.deviceDataPtr), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
 
-    matrixAddRow.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
 
   def +|(vector: Vector[T]): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixAddColumn, vector, new Matrix[T](rows, columns))
+    val kernel = matrixAddColumn.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, vector, new Matrix[T](rows, columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(vector.deviceDataPtr), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
 
-    matrixAddColumn.launch(params, result)
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def +(scalar: Byte): Matrix[T] = {
+    val kernel = matrixAddScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Byte](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def +(scalar: Short): Matrix[T] = {
+    val kernel = matrixAddScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Short](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def +(scalar: Int): Matrix[T] = {
+    val kernel = matrixAddScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Int](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def +(scalar: Long): Matrix[T] = {
+    val kernel = matrixAddScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Long](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
 
     result
   }
 
   def +(scalar: Float): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixAddScalar, scalar, new Matrix[T](rows, columns))
+    val kernel = matrixAddScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(Array[Float](scalar)), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixAddScalar.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
 
   def +(scalar: Double): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixAddScalar, scalar, new Matrix[T](rows, columns))
+    val kernel = matrixAddScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
 
     val params = Pointer.to(
-      Pointer.to(deviceDataPtr), Pointer.to(Array[Float](scalar.toFloat)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Double](scalar)), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixAddScalar.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
 
   def -(matrix: Matrix[T]): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixSubMatrix, matrix, new Matrix[T](rows, columns))
+    val kernel = matrixSubMatrix.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, matrix, new Matrix[T](rows, columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(matrix.deviceDataPtr), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixSubMatrix.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
 
   def -(vector: Vector[T]): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixSubRow, vector, new Matrix[T](rows, columns))
+    val kernel = matrixSubRow.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, vector, new Matrix[T](rows, columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(vector.deviceDataPtr), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
 
-    matrixSubRow.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
 
   def -|(vector: Vector[T]): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixSubColumn, vector, new Matrix[T](rows, columns))
+    val kernel = matrixSubColumn.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, vector, new Matrix[T](rows, columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(vector.deviceDataPtr), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
 
-    matrixSubColumn.launch(params, result)
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def -(scalar: Byte): Matrix[T] = {
+    val kernel = matrixSubScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Byte](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def -(scalar: Short): Matrix[T] = {
+    val kernel = matrixSubScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Short](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def -(scalar: Int): Matrix[T] = {
+    val kernel = matrixSubScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Int](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def -(scalar: Long): Matrix[T] = {
+    val kernel = matrixSubScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Long](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
 
     result
   }
 
   def -(scalar: Float): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixSubScalar, scalar, new Matrix[T](rows, columns))
+    val kernel = matrixSubScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(Array[Float](scalar)), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixSubScalar.launch(params, result)
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def -(scalar: Double): Matrix[T] = {
+    val kernel = matrixSubScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Double](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
 
     result
   }
 
   def *(matrix: Matrix[T]): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixMulMatrix, matrix, new Matrix[T](rows, matrix.columns))
+    val kernel = matrixMulMatrix.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, matrix, new Matrix[T](rows, matrix.columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(matrix.deviceDataPtr), Pointer.to(result.deviceDataPtr),
@@ -169,13 +299,14 @@ class Matrix[T: ClassTag](val rows: Int, val columns: Int, override protected[te
       Pointer.to(Array[Int](result.rows)), Pointer.to(Array[Int](result.columns))
     )
 
-    matrixMulMatrix.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
 
   def *(vector: Vector[T]): Vector[T] = {
-    val result = resultsCache.result[T, Vector[T]](matrixMulVector, vector, new Vector[T](rows))
+    val kernel = matrixMulVector.kernel[T]
+    val result = resultsCache.result[T, Vector[T]](kernel, vector, new Vector[T](rows))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(vector.deviceDataPtr), Pointer.to(result.deviceDataPtr),
@@ -183,148 +314,258 @@ class Matrix[T: ClassTag](val rows: Int, val columns: Int, override protected[te
       Pointer.to(Array[Int](vector.length)), Pointer.to(Array[Int](result.length))
     )
 
-    matrixMulVector.launch(params, result)
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def *(scalar: Byte): Matrix[T] = {
+    val kernel = matrixMulScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Byte](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def *(scalar: Short): Matrix[T] = {
+    val kernel = matrixMulScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Short](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def *(scalar: Int): Matrix[T] = {
+    val kernel = matrixMulScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Int](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def *(scalar: Long): Matrix[T] = {
+    val kernel = matrixMulScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Long](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
 
     result
   }
 
   def *(scalar: Float): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixMulScalar, scalar, new Matrix[T](rows, columns))
+    val kernel = matrixMulScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(Array[Float](scalar)), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixMulScalar.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
 
   def *(scalar: Double): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixMulScalar, scalar, new Matrix[T](rows, columns))
+    val kernel = matrixMulScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
 
     val params = Pointer.to(
-      Pointer.to(deviceDataPtr), Pointer.to(Array[Float](scalar.toFloat)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Double](scalar)), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixMulScalar.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
 
   def :*(matrix: Matrix[T]): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixElementWiseMulMatrix, matrix, new Matrix[T](rows, columns))
+    val kernel = matrixElementWiseMulMatrix.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, matrix, new Matrix[T](rows, columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(matrix.deviceDataPtr), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixElementWiseMulMatrix.launch(params, result)
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def /(scalar: Byte): Matrix[T] = {
+    val kernel = matrixDivScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Byte](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def /(scalar: Short): Matrix[T] = {
+    val kernel = matrixDivScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Short](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def /(scalar: Int): Matrix[T] = {
+    val kernel = matrixDivScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Int](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def /(scalar: Long): Matrix[T] = {
+    val kernel = matrixDivScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Long](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
 
     result
   }
 
   def /(scalar: Float): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixDivScalar, scalar, new Matrix[T](rows, columns))
+    val kernel = matrixDivScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(Array[Float](scalar)), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixDivScalar.launch(params, result)
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def /(scalar: Double): Matrix[T] = {
+    val kernel = matrixDivScalar.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, scalar, new Matrix[T](rows, columns))
+
+    val params = Pointer.to(
+      Pointer.to(deviceDataPtr), Pointer.to(Array[Double](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
+    )
+    kernel.launch(params, result)
 
     result
   }
 
   def :/(matrix: Matrix[T]): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixElementWiseDivMatrix, matrix, new Matrix[T](rows, columns))
+    val kernel = matrixElementWiseDivMatrix.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, matrix, new Matrix[T](rows, columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(matrix.deviceDataPtr), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixElementWiseDivMatrix.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
 
-  def pow(power: Float): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixPow, power, new Matrix[T](rows, columns))
-
-    val params = Pointer.to(
-      Pointer.to(deviceDataPtr), Pointer.to(Array[Float](power)), Pointer.to(result.deviceDataPtr),
-      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
-    )
-    matrixPow.launch(params, result)
-
-    result
-  }
-
-  def pow2(): Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixPow, 2, new Matrix[T](rows, columns))
-
-    val params = Pointer.to(
-      Pointer.to(deviceDataPtr), Pointer.to(result.deviceDataPtr),
-      Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
-    )
-    matrixPow2.launch(params, result)
-
-    result
-  }
-
-  def ^(power: Float): Matrix[T] = {
+  def ^(power: Float): Matrix[Float] = {
     if (power == 2) {
-      pow2()
+      pow2(this)
     } else {
-      pow(power)
+      pow(this, power)
+    }
+  }
+
+  def ^(power: Double): Matrix[Double] = {
+    if (power == 2) {
+      pow2d(this)
+    } else {
+      powd(this, power)
     }
   }
 
   def t: Matrix[T] = {
-    val result = resultsCache.result[T, Matrix[T]](matrixTranspose, Unit, new Matrix[T](columns, rows))
+    val kernel = matrixTranspose.kernel[T]
+    val result = resultsCache.result[T, Matrix[T]](kernel, Unit, new Matrix[T](columns, rows))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixTranspose.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
 
   def row(i: Int): Vector[T] = {
-    val result = resultsCache.result[T, Vector[T]](matrixRow, Unit, new Vector[T](columns))
+    val kernel = matrixRow.kernel[T]
+    val result = resultsCache.result[T, Vector[T]](kernel, Unit, new Vector[T](columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(result.deviceDataPtr), Pointer.to(Array[Int](i)),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixRow.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
 
   def column(j: Int): Vector[T] = {
-    val result = resultsCache.result[T, Vector[T]](matrixColumn, Unit, new Vector[T](rows))
+    val kernel = matrixColumn.kernel[T]
+    val result = resultsCache.result[T, Vector[T]](kernel, Unit, new Vector[T](rows))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(result.deviceDataPtr), Pointer.to(Array[Int](j)),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixColumn.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
 
   def sum(): Scalar[T] = {
-    val result = resultsCache.result[T, Scalar[T]](matrixSum, this, new Scalar[T]())
+    val kernel = matrixSum.kernel[T]
+    val result = resultsCache.result[T, Scalar[T]](kernel, this, new Scalar[T]())
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
 
-    matrixSum.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
@@ -338,25 +579,27 @@ class Matrix[T: ClassTag](val rows: Int, val columns: Int, override protected[te
   }
 
   private def sumRows(): Vector[T] = {
-    val result = resultsCache.result[T, Vector[T]](matrixSumRows, Unit, new Vector[T](columns))
+    val kernel = matrixSumRows.kernel[T]
+    val result = resultsCache.result[T, Vector[T]](kernel, Unit, new Vector[T](columns))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixSumRows.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
 
   private def sumColumns(): Vector[T] = {
-    val result = resultsCache.result[T, Vector[T]](matrixSumColumns, Unit, new Vector[T](rows))
+    val kernel = matrixSumColumns.kernel[T]
+    val result = resultsCache.result[T, Vector[T]](kernel, Unit, new Vector[T](rows))
 
     val params = Pointer.to(
       Pointer.to(deviceDataPtr), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](rows)), Pointer.to(Array[Int](columns))
     )
-    matrixSumColumns.launch(params, result)
+    kernel.launch(params, result)
 
     result
   }
@@ -364,29 +607,27 @@ class Matrix[T: ClassTag](val rows: Int, val columns: Int, override protected[te
 
 object Matrix {
 
-  lazy val matrixAddMatrix = new MatrixAddMatrix
-  lazy val matrixAddScalar = new MatrixAddScalar
-  lazy val matrixColumn = new MatrixColumn
-  lazy val matrixDivScalar = new MatrixDivScalar
-  lazy val matrixElementWiseDivMatrix = new MatrixElementWiseDivMatrix
-  lazy val matrixElementWiseMulMatrix = new MatrixElementWiseMulMatrix
-  lazy val matrixMulMatrix = new MatrixMulMatrix
-  lazy val matrixMulScalar = new MatrixMulScalar
-  lazy val matrixMulVector = new MatrixMulVector
-  lazy val matrixRow = new MatrixRow
-  lazy val matrixSubMatrix = new MatrixSubMatrix
-  lazy val matrixSubScalar = new MatrixSubScalar
-  lazy val matrixTranspose = new MatrixTranspose
-  lazy val matrixPow = new MatrixPow
-  lazy val matrixPow2 = new MatrixPow2
-  lazy val matrixSum = new MatrixSum
-  lazy val matrixSumRows = new MatrixSumRows
-  lazy val matrixSumColumns = new MatrixSumColumns
-  lazy val matrixAddRow = new MatrixAddRow
-  lazy val matrixAddColumn = new MatrixAddColumn
-  lazy val matrixSubRow = new MatrixSubRow
-  lazy val matrixSubColumn = new MatrixSubColumn
-  lazy val matrixColumnsValues = new MatrixColumnsValues
+  lazy val matrixAddMatrix = new KernelTemplate(new MatrixAddMatrix)
+  lazy val matrixAddScalar = new KernelTemplate(new MatrixAddScalar)
+  lazy val matrixColumn = new KernelTemplate(new MatrixColumn)
+  lazy val matrixDivScalar = new KernelTemplate(new MatrixDivScalar)
+  lazy val matrixElementWiseDivMatrix = new KernelTemplate(new MatrixElementWiseDivMatrix)
+  lazy val matrixElementWiseMulMatrix = new KernelTemplate(new MatrixElementWiseMulMatrix)
+  lazy val matrixMulMatrix = new KernelTemplate(new MatrixMulMatrix)
+  lazy val matrixMulScalar = new KernelTemplate(new MatrixMulScalar)
+  lazy val matrixMulVector = new KernelTemplate(new MatrixMulVector)
+  lazy val matrixRow = new KernelTemplate(new MatrixRow)
+  lazy val matrixSubMatrix = new KernelTemplate(new MatrixSubMatrix)
+  lazy val matrixSubScalar = new KernelTemplate(new MatrixSubScalar)
+  lazy val matrixTranspose = new KernelTemplate(new MatrixTranspose)
+  lazy val matrixSum = new KernelTemplate(new MatrixSum)
+  lazy val matrixSumRows = new KernelTemplate(new MatrixSumRows)
+  lazy val matrixSumColumns = new KernelTemplate(new MatrixSumColumns)
+  lazy val matrixAddRow = new KernelTemplate(new MatrixAddRow)
+  lazy val matrixAddColumn = new KernelTemplate(new MatrixAddColumn)
+  lazy val matrixSubRow = new KernelTemplate(new MatrixSubRow)
+  lazy val matrixSubColumn = new KernelTemplate(new MatrixSubColumn)
+  lazy val matrixColumnsValues = new KernelTemplate(new MatrixColumnsValues)
 
   def apply[T: ClassTag](rows: Int, columns: Int): MatrixBuilder[T] = {
     new MatrixBuilder[T](rows, columns)

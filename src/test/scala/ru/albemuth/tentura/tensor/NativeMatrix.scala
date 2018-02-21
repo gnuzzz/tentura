@@ -286,28 +286,6 @@ class NativeMatrix(v: Array[Array[Float]]) {
     result
   }
 
-  def sigmoid(): NativeMatrix = {
-    val result = emptyMatrix(rows, columns)
-    for (i <- data.indices) {
-      val row = data(i)
-      for (j <- row.indices) {
-        result.data(i)(j) = (1.0 / (1.0 + Math.exp(-row(j)))).toFloat
-      }
-    }
-    result
-  }
-
-  def exp(): NativeMatrix = {
-    val result = emptyMatrix(rows, columns)
-    for (i <- data.indices) {
-      val row = data(i)
-      for (j <- row.indices) {
-        result.data(i)(j) = Math.exp(row(j)).toFloat
-      }
-    }
-    result
-  }
-
   def sum(): Float = {
     (for (row <- data) yield row.sum).sum
   }
@@ -375,7 +353,7 @@ object NativeMatrix {
       case java.lang.Character.TYPE => (value * 100).toChar.asInstanceOf[T]
       case java.lang.Integer.TYPE   => (value * 100).toInt.asInstanceOf[T]
       case java.lang.Long.TYPE      => (value * 100).toLong.asInstanceOf[T]
-      case java.lang.Float.TYPE     => value.toFloat.asInstanceOf[T]
+      case java.lang.Float.TYPE     => (value * 100).toFloat.asInstanceOf[T]
       case java.lang.Double.TYPE    => value.asInstanceOf[T]
       case java.lang.Boolean.TYPE   => (value > 0).asInstanceOf[T]
       case java.lang.Void.TYPE      => throw new IllegalArgumentException

@@ -1,14 +1,14 @@
-extern "C"
-__global__ void vectorMulVector(float* A, float* B, float* result, int length) {
-  float resultValue = 0.0f;
+template<typename T>
+__device__ void vectorMulVector(T* A, T* B, T* result, int length) {
+  T resultValue = 0;
   for (int i = 0; i < length; i++) {
     resultValue += A[i] * B[i];
   }
   result[0] = resultValue;
 }
 
-extern "C"
-__global__ void matrixMulVector(float* matrix, float* vector, float* result,
+template<typename T>
+__device__ void matrixMulVector(T* matrix, T* vector, T* result,
                                 int matrixRows, int matrixColumns,
                                 int vectorLength, int resultLength) {
 
@@ -17,7 +17,7 @@ __global__ void matrixMulVector(float* matrix, float* vector, float* result,
   int index = bx * blockDim.x + tx;
 
   if (index < resultLength) {
-    float resultValue = 0.0f;
+    T resultValue = 0;
     int rowStart = index * matrixColumns;
     for (int i = 0; i < vectorLength; i++) {
       resultValue += matrix[rowStart + i] * vector[i];
@@ -28,8 +28,8 @@ __global__ void matrixMulVector(float* matrix, float* vector, float* result,
 
 }
 
-extern "C"
-__global__ void vectorMulMatrix(float* vector, float* matrix, float* result,
+template<typename T>
+__device__ void vectorMulMatrix(T* vector, T* matrix, T* result,
                                 int vectorLength,
                                 int matrixRows, int matrixColumns,
                                 int resultLength) {
@@ -39,7 +39,7 @@ __global__ void vectorMulMatrix(float* vector, float* matrix, float* result,
   int index = bx * blockDim.x + tx;
 
   if (index < resultLength) {
-    float resultValue = 0.0f;
+    T resultValue = 0;
     for (int i = 0; i < vectorLength; i++) {
       resultValue += vector[i] * matrix[index + i * matrixColumns];
     }
@@ -48,8 +48,8 @@ __global__ void vectorMulMatrix(float* vector, float* matrix, float* result,
 
 }
 
-extern "C"
-__global__ void vectorMatrixMulVector(float* vectorA, float* vectorB, float* resultMatrix, int lengthA, int lengthB) {
+template<typename T>
+__device__ void vectorMatrixMulVector(T* vectorA, T* vectorB, T* resultMatrix, int lengthA, int lengthB) {
   int bx = blockIdx.x;
   int by = blockIdx.y;
   int tx = threadIdx.x;

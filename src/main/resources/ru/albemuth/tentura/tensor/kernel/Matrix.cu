@@ -1,8 +1,8 @@
 #define TILE_DIM 32
 #define BLOCK_ROWS 4
 
-extern "C"
-__global__ void matrixAddMatrix(float* A, float* B, float* C, int rows, int columns) {
+template<typename T>
+__device__ void matrixAddMatrix(T* A, T* B, T* C, int rows, int columns) {
 
   int row = blockIdx.y * blockDim.y + threadIdx.y;
   int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -16,8 +16,8 @@ __global__ void matrixAddMatrix(float* A, float* B, float* C, int rows, int colu
   }
 }
 
-extern "C"
-__global__ void matrixAddScalar(float* A, float scalar, float* C,
+template<typename T>
+__device__ void matrixAddScalar(T* A, T scalar, T* C,
                                 int numRows, int numColumns) {
 
   int bx = blockIdx.x;
@@ -34,8 +34,8 @@ __global__ void matrixAddScalar(float* A, float scalar, float* C,
   }
 }
 
-extern "C"
-__global__ void matrixSubMatrix(float* A, float* B, float* C,
+template<typename T>
+__device__ void matrixSubMatrix(T* A, T* B, T* C,
                                 int numRows, int numColumns) {
 
   int bx = blockIdx.x;
@@ -52,8 +52,8 @@ __global__ void matrixSubMatrix(float* A, float* B, float* C,
   }
 }
 
-extern "C"
-__global__ void matrixSubScalar(float* A, float scalar, float* C,
+template<typename T>
+__device__ void matrixSubScalar(T* A, T scalar, T* C,
                                 int numRows, int numColumns) {
 
   int bx = blockIdx.x;
@@ -70,8 +70,8 @@ __global__ void matrixSubScalar(float* A, float scalar, float* C,
   }
 }
 
-extern "C"
-__global__ void scalarSubMatrix(float scalar, float* A, float* C,
+template<typename T>
+__device__ void scalarSubMatrix(T scalar, T* A, T* C,
                                 int numRows, int numColumns) {
 
   int bx = blockIdx.x;
@@ -88,14 +88,14 @@ __global__ void scalarSubMatrix(float scalar, float* A, float* C,
   }
 }
 
-extern "C"
-__global__ void matrixMulMatrix(float* A, float* B, float* C,
+template<typename T>
+__device__ void matrixMulMatrix(T* A, T* B, T* C,
                                 int numARows, int numAColumns,
                                 int numBRows, int numBColumns,
                                 int numCRows, int numCColumns) {
 
-  __shared__ float ds_A[TILE_DIM][TILE_DIM];
-  __shared__ float ds_B[TILE_DIM][TILE_DIM];
+  __shared__ T ds_A[TILE_DIM][TILE_DIM];
+  __shared__ T ds_B[TILE_DIM][TILE_DIM];
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -111,12 +111,12 @@ __global__ void matrixMulMatrix(float* A, float* B, float* C,
     if (row < numARows && t * TILE_DIM + tx < numAColumns) {
       ds_A[ty][tx] = A[row * numAColumns + t * TILE_DIM + tx];
     } else {
-      ds_A[ty][tx] = 0.0;
+      ds_A[ty][tx] = 0;
     }
     if (t * TILE_DIM + ty < numBRows && col < numBColumns) {
       ds_B[ty][tx] = B[(t * TILE_DIM + ty) * numBColumns + col];
     } else {
-      ds_B[ty][tx] = 0.0;
+      ds_B[ty][tx] = 0;
     }
     __syncthreads();
 
@@ -132,8 +132,8 @@ __global__ void matrixMulMatrix(float* A, float* B, float* C,
   }
 }
 
-extern "C"
-__global__ void matrixMulScalar(float* A, float scalar, float* C,
+template<typename T>
+__device__ void matrixMulScalar(T* A, T scalar, T* C,
                                 int numRows, int numColumns) {
 
   int bx = blockIdx.x;
@@ -150,9 +150,9 @@ __global__ void matrixMulScalar(float* A, float scalar, float* C,
   }
 }
 
-extern "C"
-__global__ void matrixElementWiseMulMatrix(float* A, float* B, float* C,
-                                int numRows, int numColumns) {
+template<typename T>
+__device__ void matrixElementWiseMulMatrix(T* A, T* B, T* C,
+                                           int numRows, int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -168,8 +168,8 @@ __global__ void matrixElementWiseMulMatrix(float* A, float* B, float* C,
   }
 }
 
-extern "C"
-__global__ void matrixDivScalar(float* A, float scalar, float* C,
+template<typename T>
+__device__ void matrixDivScalar(T* A, T scalar, T* C,
                                 int numRows, int numColumns) {
 
   int bx = blockIdx.x;
@@ -186,8 +186,8 @@ __global__ void matrixDivScalar(float* A, float scalar, float* C,
   }
 }
 
-extern "C"
-__global__ void scalarDivMatrix(float scalar, float* A, float* C,
+template<typename T>
+__device__ void scalarDivMatrix(T scalar, T* A, T* C,
                                 int numRows, int numColumns) {
 
   int bx = blockIdx.x;
@@ -204,9 +204,9 @@ __global__ void scalarDivMatrix(float scalar, float* A, float* C,
   }
 }
 
-extern "C"
-__global__ void matrixElementWiseDivMatrix(float* A, float* B, float* C,
-                                int numRows, int numColumns) {
+template<typename T>
+__device__ void matrixElementWiseDivMatrix(T* A, T* B, T* C,
+                                           int numRows, int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -222,9 +222,9 @@ __global__ void matrixElementWiseDivMatrix(float* A, float* B, float* C,
   }
 }
 
-extern "C"
-__global__ void matrixTranspose(const float* matrix, float* result, const int rows, const int columns) {
-  __shared__ float tile[TILE_DIM][TILE_DIM + 1];
+template<typename T>
+__device__ void matrixTranspose(const T* matrix, T* result, const int rows, const int columns) {
+  __shared__ T tile[TILE_DIM][TILE_DIM + 1];
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -252,8 +252,8 @@ __global__ void matrixTranspose(const float* matrix, float* result, const int ro
   }
 }
 
-extern "C"
-__global__ void matrixRow(float* matrix, float* result, int row,
+template<typename T>
+__device__ void matrixRow(T* matrix, T* result, int row,
                           int matrixRows, int matrixColumns) {
 
   int bx = blockIdx.x;
@@ -263,9 +263,9 @@ __global__ void matrixRow(float* matrix, float* result, int row,
   result[index] = matrix[row * matrixColumns + index];
 }
 
-extern "C"
-__global__ void matrixColumn(float* matrix, float* result, int column,
-                          int matrixRows, int matrixColumns) {
+template<typename T>
+__device__ void matrixColumn(T* matrix, T* result, int column,
+                             int matrixRows, int matrixColumns) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -274,84 +274,11 @@ __global__ void matrixColumn(float* matrix, float* result, int column,
   result[index] = matrix[index * matrixColumns + column];
 }
 
-extern "C"
-__global__ void matrixPow2(float* matrix, float* result,
+template<typename T>
+__device__ void matrixSum(T* matrix, T* result,
                           int numRows, int numColumns) {
 
-  int bx = blockIdx.x;
-  int by = blockIdx.y;
-  int tx = threadIdx.x;
-  int ty = threadIdx.y;
-
-  int row = by * blockDim.y + ty;
-  int col = bx * blockDim.x + tx;
-
-  if (row < numRows && col < numColumns) {
-    int ij = row * numColumns + col;
-    float mij = matrix[ij];
-    result[ij] = mij * mij;
-  }
-}
-
-extern "C"
-__global__ void matrixPow(float* matrix, float power, float* result,
-                          int numRows, int numColumns) {
-
-  int bx = blockIdx.x;
-  int by = blockIdx.y;
-  int tx = threadIdx.x;
-  int ty = threadIdx.y;
-
-  int row = by * blockDim.y + ty;
-  int col = bx * blockDim.x + tx;
-
-  if (row < numRows && col < numColumns) {
-    int ij = row * numColumns + col;
-    result[ij] = pow(matrix[ij], power);
-  }
-}
-
-extern "C"
-__global__ void matrixExp(float* matrix, float* result,
-                          int numRows, int numColumns) {
-
-  int bx = blockIdx.x;
-  int by = blockIdx.y;
-  int tx = threadIdx.x;
-  int ty = threadIdx.y;
-
-  int row = by * blockDim.y + ty;
-  int col = bx * blockDim.x + tx;
-
-  if (row < numRows && col < numColumns) {
-    int ij = row * numColumns + col;
-    result[ij] = exp(matrix[ij]);
-  }
-}
-
-extern "C"
-__global__ void matrixSigmoid(float* matrix, float* result,
-                              int numRows, int numColumns) {
-
-  int bx = blockIdx.x;
-  int by = blockIdx.y;
-  int tx = threadIdx.x;
-  int ty = threadIdx.y;
-
-  int row = by * blockDim.y + ty;
-  int col = bx * blockDim.x + tx;
-
-  if (row < numRows && col < numColumns) {
-    int ij = row * numColumns + col;
-    result[ij] = 1.0f / (1.0f + exp(-matrix[ij]));
-  }
-}
-
-extern "C"
-__global__ void matrixSum(float* matrix, float* result,
-                          int numRows, int numColumns) {
-
-  __shared__ float tile[TILE_DIM][TILE_DIM];
+  __shared__ T tile[TILE_DIM][TILE_DIM];
 
   int tx = threadIdx.x;
   int ty = threadIdx.y;
@@ -372,7 +299,7 @@ __global__ void matrixSum(float* matrix, float* result,
   }
 
   if (tx == 0 && ty == 0) {
-    float sum = 0;
+    T sum = 0;
     #pragma unroll
     for (int i = 0; i < TILE_DIM; i++) {
       #pragma unroll
@@ -384,8 +311,8 @@ __global__ void matrixSum(float* matrix, float* result,
   }
 }
 
-extern "C"
-__global__ void matrixSumRows(float* matrix, float* result,
+template<typename T>
+__device__ void matrixSumRows(T* matrix, T* result,
                               int numRows, int numColumns) {
 
   int bx = blockIdx.x;
@@ -402,11 +329,11 @@ __global__ void matrixSumRows(float* matrix, float* result,
   }
 }
 
-extern "C"
-__global__ void matrixSumColumns(float* matrix, float* result,
+template<typename T>
+__device__ void matrixSumColumns(T* matrix, T* result,
                                  int numRows, int numColumns) {
 
-  __shared__ float tile[TILE_DIM][TILE_DIM];
+  __shared__ T tile[TILE_DIM][TILE_DIM];
 
   int by = blockIdx.y;
   int ty = threadIdx.y;
@@ -439,8 +366,8 @@ __global__ void matrixSumColumns(float* matrix, float* result,
   }
 }
 
-extern "C"
-__global__ void matrixAddRow(float* matrix, float* vector, float* result,
+template<typename T>
+__device__ void matrixAddRow(T* matrix, T* vector, T* result,
                              int numRows, int numColumns) {
 
   int bx = blockIdx.x;
@@ -452,13 +379,13 @@ __global__ void matrixAddRow(float* matrix, float* vector, float* result,
   int col = bx * blockDim.x + tx;
 
   if (row < numRows && col < numColumns) {
-    float sum = matrix[row * numColumns + col] + vector[col];
+    T sum = matrix[row * numColumns + col] + vector[col];
     result[row * numColumns + col] = sum;
   }
 }
 
-extern "C"
-__global__ void vectorRowAddMatrix(float* vector, float* matrix, float* result,
+template<typename T>
+__device__ void vectorRowAddMatrix(T* vector, T* matrix, T* result,
                                    int numRows, int numColumns) {
 
   int bx = blockIdx.x;
@@ -470,16 +397,16 @@ __global__ void vectorRowAddMatrix(float* vector, float* matrix, float* result,
   int col = bx * blockDim.x + tx;
 
   if (row < numRows && col < numColumns) {
-    float sum = matrix[row * numColumns + col] + vector[col];
+    T sum = matrix[row * numColumns + col] + vector[col];
     result[row * numColumns + col] = sum;
   }
 }
 
-extern "C"
-__global__ void matrixAddColumn(float* matrix, float* vector, float* result,
+template<typename T>
+__device__ void matrixAddColumn(T* matrix, T* vector, T* result,
                                 int numRows, int numColumns) {
 
-  __shared__ float tile[TILE_DIM];
+  __shared__ T tile[TILE_DIM];
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -500,16 +427,16 @@ __global__ void matrixAddColumn(float* matrix, float* vector, float* result,
   __syncthreads();
 
   if (row < numRows && col < numColumns) {
-    float sum = matrix[row * numColumns + col] + tile[ty];
+    T sum = matrix[row * numColumns + col] + tile[ty];
     result[row * numColumns + col] = sum;
   }
 }
 
-extern "C"
-__global__ void vectorColumnAddMatrix(float* vector, float* matrix, float* result,
+template<typename T>
+__device__ void vectorColumnAddMatrix(T* vector, T* matrix, T* result,
                                       int numRows, int numColumns) {
 
-  __shared__ float tile[TILE_DIM];
+  __shared__ T tile[TILE_DIM];
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -530,13 +457,13 @@ __global__ void vectorColumnAddMatrix(float* vector, float* matrix, float* resul
   __syncthreads();
 
   if (row < numRows && col < numColumns) {
-    float sum = tile[ty] + matrix[row * numColumns + col];
+    T sum = tile[ty] + matrix[row * numColumns + col];
     result[row * numColumns + col] = sum;
   }
 }
 
-extern "C"
-__global__ void matrixSubRow(float* matrix, float* vector, float* result,
+template<typename T>
+__device__ void matrixSubRow(T* matrix, T* vector, T* result,
                              int numRows, int numColumns) {
 
   int bx = blockIdx.x;
@@ -548,13 +475,13 @@ __global__ void matrixSubRow(float* matrix, float* vector, float* result,
   int col = bx * blockDim.x + tx;
 
   if (row < numRows && col < numColumns) {
-    float sum = matrix[row * numColumns + col] - vector[col];
+    T sum = matrix[row * numColumns + col] - vector[col];
     result[row * numColumns + col] = sum;
   }
 }
 
-extern "C"
-__global__ void vectorRowSubMatrix(float* vector, float* matrix, float* result,
+template<typename T>
+__device__ void vectorRowSubMatrix(T* vector, T* matrix, T* result,
                                    int numRows, int numColumns) {
 
   int bx = blockIdx.x;
@@ -566,16 +493,16 @@ __global__ void vectorRowSubMatrix(float* vector, float* matrix, float* result,
   int col = bx * blockDim.x + tx;
 
   if (row < numRows && col < numColumns) {
-    float sum = vector[col] - matrix[row * numColumns + col];
+    T sum = vector[col] - matrix[row * numColumns + col];
     result[row * numColumns + col] = sum;
   }
 }
 
-extern "C"
-__global__ void matrixSubColumn(float* matrix, float* vector, float* result,
+template<typename T>
+__device__ void matrixSubColumn(T* matrix, T* vector, T* result,
                                 int numRows, int numColumns) {
 
-  __shared__ float tile[TILE_DIM];
+  __shared__ T tile[TILE_DIM];
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -596,16 +523,16 @@ __global__ void matrixSubColumn(float* matrix, float* vector, float* result,
   __syncthreads();
 
   if (row < numRows && col < numColumns) {
-    float sum = matrix[row * numColumns + col] - tile[ty];
+    T sum = matrix[row * numColumns + col] - tile[ty];
     result[row * numColumns + col] = sum;
   }
 }
 
-extern "C"
-__global__ void vectorColumnSubMatrix(float* vector, float* matrix, float* result,
+template<typename T>
+__device__ void vectorColumnSubMatrix(T* vector, T* matrix, T* result,
                                       int numRows, int numColumns) {
 
-  __shared__ float tile[TILE_DIM];
+  __shared__ T tile[TILE_DIM];
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -626,23 +553,7 @@ __global__ void vectorColumnSubMatrix(float* vector, float* matrix, float* resul
   __syncthreads();
 
   if (row < numRows && col < numColumns) {
-    float sum = tile[ty] - matrix[row * numColumns + col];
+    T sum = tile[ty] - matrix[row * numColumns + col];
     result[row * numColumns + col] = sum;
   }
-}
-
-extern "C"
-__global__ void matrixColumnsValues(float* matrix, int* columnsIndices, float* result,
-                                    int numRows, int numColumns) {
-
-  int by = blockIdx.y;
-  int ty = threadIdx.y;
-
-  int row = by * blockDim.y + ty;
-
-  if (row < numRows) {
-    int col = columnsIndices[row];
-    result[row] = matrix[row * numColumns + col];
-  }
-
 }

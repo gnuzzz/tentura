@@ -4,6 +4,8 @@ import jcuda.{Pointer, Sizeof}
 import jcuda.driver._
 import java.io._
 
+import scala.collection.mutable
+import scala.io.Source
 import scala.reflect.ClassTag
 
 /**
@@ -14,6 +16,8 @@ trait JCudaKernel {
 }
 
 object JCudaKernel {
+
+  private val modules = new mutable.HashMap[String, CUmodule]()
 
   JCudaKernel.init()
 
@@ -26,9 +30,12 @@ object JCudaKernel {
     JCudaDriver.cuCtxCreate(context, 0, device)
   }
 
-  def loadKernel(fileName: String, classifier: String, functionName: String): CUfunction = {
-    val module = new CUmodule
-    JCudaDriver.cuModuleLoadData(module, getPtxImage(fileName, classifier))
+  def loadKernel(moduleName: String, classifier: String, functionName: String): CUfunction = {
+    val module = modules.getOrElseUpdate(moduleName, {
+      val m = new CUmodule
+      JCudaDriver.cuModuleLoadData(m, getPtxImage(moduleName, classifier))
+      m
+    })
     val function = new CUfunction
     JCudaDriver.cuModuleGetFunction(function, module, functionName)
     function
@@ -63,15 +70,16 @@ object JCudaKernel {
 
   def preparePtxFile(fileName: String, classifier: String): String = {
     val cuFileName = "/" + fileName + ".cu"
+    val processedCuFileName = "/" + fileName + "_processed.cu"
     val ptxFileName = fileName + "_" + classifier + ".ptx"
-    val ptxFile = new File("src/main/resources/" + ptxFileName)
-//    if (ptxFile.exists) return ptxFile.getPath
-
     val cuFile: File = new File("src/main/resources/" + cuFileName)
-    if (!cuFile.exists) throw new IOException("Input file not found: " + cuFileName)
+    if (!cuFile.exists) throw new FileNotFoundException("Input file not found: " + cuFileName)
+    val processedCuFile: File = new File("src/main/resources/" + processedCuFileName)
+    val ptxFile = new File("src/main/resources/" + ptxFileName)
+
+    processTemplates(cuFile.getPath, processedCuFile.getPath)
     val modelString = "-m" + System.getProperty("sun.arch.data.model")
-//    val command = "nvcc " + modelString + " -ptx " + cuFile.getPath + " -o " + ptxFileName
-    val command = "nvcc " + modelString + " -ptx " + cuFile.getPath + " -o " + ptxFile.getPath
+    val command = "nvcc " + modelString + " -ptx " + processedCuFile.getPath + " -o " + ptxFile.getPath
 
     val process = Runtime.getRuntime.exec(command)
 
@@ -92,6 +100,50 @@ object JCudaKernel {
     }
 
     ptxFile.getPath
+  }
+
+  def processTemplates(cuFileName: String, processedCuFileName: String): Unit = {
+    val cuSource = Source.fromFile(cuFileName).mkString
+    val functionRegex = "template<typename T>\\s+__device__\\s+void\\s+(\\w+)\\s*\\(([^)]*)\\)".r
+    val paramsRegex = "(?:const\\s+)?(\\w+)\\s*([*&])?\\s*(\\w+)\\s*,?".r
+    val types = List(("Boolean", "unsigned char"), ("Byte", "char"), ("Char", "unsigned short"), ("Short", "short"), ("Int", "int"), ("Long", "long long int"), ("Float", "float"), ("Double", "double"))
+    val materializedTemplates = for (
+      functionMatcher <- functionRegex.findAllMatchIn(cuSource);
+      templateType <- types
+    ) yield {
+      val name = functionMatcher.group(1)
+      val params = paramsRegex.findAllMatchIn(functionMatcher.group(2)).map(m => (m.group(1), m.group(2), m.group(3))).toList
+      templateImpl(name, templateType._1, params, templateType._2)
+    }
+    val processedCuSource = cuSource + "\n" + materializedTemplates.filter(t => !cuSource.contains(t._1)).map(_._2).mkString("\n")
+    val out = new PrintWriter(new File(processedCuFileName))
+    out.print(processedCuSource)
+    out.close()
+  }
+
+  def templateImpl(name: String, postfix: String, params: List[(String, String, String)], typeName: String): (String, String) = {
+    (s"${name}_${postfix}",
+    s"""
+extern "C"
+__global__ void ${name}_${postfix}(${formalParams(params, typeName)}) {
+  ${name}<${typeName}>(${actualParams(params)});
+}"""
+      )
+  }
+
+  def formalParams(params: List[(String, String, String)], typeName: String): String = {
+    params.map(formalParam(_, typeName)).mkString(", ")
+  }
+
+  def formalParam(param: (String, String, String), typeName: String): String = {
+    if ("T".equals(param._1))
+      typeName + (if (param._2 != null) param._2 else "") + " " + param._3
+    else
+      param._1 + (if (param._2 != null) param._2 else "") + " " + param._3
+  }
+
+  def actualParams(params: List[(String, String, String)]): String = {
+    params.map(_._3).mkString(", ")
   }
 
   def toByteArray(inputStream: InputStream): Array[Byte] = {
@@ -125,7 +177,7 @@ object JCudaKernel {
 
   def pointer[T](data: Array[T]): Pointer = {
     data.getClass.getComponentType match {
-      case b if b == classOf[Boolean] => ??? //not supported
+      case b if b == classOf[Boolean] => Pointer.to(data.asInstanceOf[Array[Boolean]].map(if (_) 1.toByte else 0.toByte))
       case b if b == classOf[Byte] => Pointer.to(data.asInstanceOf[Array[Byte]])
       case c if c == classOf[Char] => Pointer.to(data.asInstanceOf[Array[Char]])
       case s if s == classOf[Short] => Pointer.to(data.asInstanceOf[Array[Short]])
