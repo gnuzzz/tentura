@@ -2,7 +2,8 @@
 #define BLOCK_ROWS 4
 
 template<typename T>
-__device__ void matrixAddMatrix(T* A, T* B, T* C, int rows, int columns) {
+__device__ void matrixAddMatrix(const T* A, const T* B, T* C,
+                                const int rows, const int columns) {
 
   int row = blockIdx.y * blockDim.y + threadIdx.y;
   int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -17,8 +18,8 @@ __device__ void matrixAddMatrix(T* A, T* B, T* C, int rows, int columns) {
 }
 
 template<typename T>
-__device__ void matrixAddScalar(T* A, T scalar, T* C,
-                                int numRows, int numColumns) {
+__device__ void matrixAddScalar(const T* A, const T scalar, T* C,
+                                const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -35,8 +36,8 @@ __device__ void matrixAddScalar(T* A, T scalar, T* C,
 }
 
 template<typename T>
-__device__ void matrixSubMatrix(T* A, T* B, T* C,
-                                int numRows, int numColumns) {
+__device__ void matrixSubMatrix(const T* A, const T* B, T* C,
+                                const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -53,8 +54,8 @@ __device__ void matrixSubMatrix(T* A, T* B, T* C,
 }
 
 template<typename T>
-__device__ void matrixSubScalar(T* A, T scalar, T* C,
-                                int numRows, int numColumns) {
+__device__ void matrixSubScalar(const T* A, const T scalar, T* C,
+                                const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -71,8 +72,8 @@ __device__ void matrixSubScalar(T* A, T scalar, T* C,
 }
 
 template<typename T>
-__device__ void scalarSubMatrix(T scalar, T* A, T* C,
-                                int numRows, int numColumns) {
+__device__ void scalarSubMatrix(const T scalar, const T* A, T* C,
+                                const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -89,10 +90,8 @@ __device__ void scalarSubMatrix(T scalar, T* A, T* C,
 }
 
 template<typename T>
-__device__ void matrixMulMatrix(T* A, T* B, T* C,
-                                int numARows, int numAColumns,
-                                int numBRows, int numBColumns,
-                                int numCRows, int numCColumns) {
+__device__ void matrixMulMatrix(const T* A, const T* B, T* C,
+                                const int numARows, const int numAColumns, const int numBRows, const int numBColumns) {
 
   __shared__ T ds_A[TILE_DIM][TILE_DIM];
   __shared__ T ds_B[TILE_DIM][TILE_DIM];
@@ -127,14 +126,14 @@ __device__ void matrixMulMatrix(T* A, T* B, T* C,
     __syncthreads();
   }
 
-  if (row < numCRows && col < numCColumns) {
-    C[row * numCColumns + col] = cValue;
+  if (row < numARows && col < numBColumns) {
+    C[row * numBColumns + col] = cValue;
   }
 }
 
 template<typename T>
-__device__ void matrixMulScalar(T* A, T scalar, T* C,
-                                int numRows, int numColumns) {
+__device__ void matrixMulScalar(const T* A, const T scalar, T* C,
+                                const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -151,8 +150,8 @@ __device__ void matrixMulScalar(T* A, T scalar, T* C,
 }
 
 template<typename T>
-__device__ void matrixElementWiseMulMatrix(T* A, T* B, T* C,
-                                           int numRows, int numColumns) {
+__device__ void matrixElementWiseMulMatrix(const T* A, const T* B, T* C,
+                                           const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -169,8 +168,8 @@ __device__ void matrixElementWiseMulMatrix(T* A, T* B, T* C,
 }
 
 template<typename T>
-__device__ void matrixDivScalar(T* A, T scalar, T* C,
-                                int numRows, int numColumns) {
+__device__ void matrixDivScalar(const T* A, const T scalar, T* C,
+                                const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -187,8 +186,8 @@ __device__ void matrixDivScalar(T* A, T scalar, T* C,
 }
 
 template<typename T>
-__device__ void scalarDivMatrix(T scalar, T* A, T* C,
-                                int numRows, int numColumns) {
+__device__ void scalarDivMatrix(const T scalar, const T* A, T* C,
+                                const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -205,8 +204,8 @@ __device__ void scalarDivMatrix(T scalar, T* A, T* C,
 }
 
 template<typename T>
-__device__ void matrixElementWiseDivMatrix(T* A, T* B, T* C,
-                                           int numRows, int numColumns) {
+__device__ void matrixElementWiseDivMatrix(const T* A, const T* B, T* C,
+                                           const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -223,7 +222,8 @@ __device__ void matrixElementWiseDivMatrix(T* A, T* B, T* C,
 }
 
 template<typename T>
-__device__ void matrixTranspose(const T* matrix, T* result, const int rows, const int columns) {
+__device__ void matrixTranspose(const T* matrix, T* result,
+                                const int rows, const int columns) {
   __shared__ T tile[TILE_DIM][TILE_DIM + 1];
 
   int bx = blockIdx.x;
@@ -253,8 +253,8 @@ __device__ void matrixTranspose(const T* matrix, T* result, const int rows, cons
 }
 
 template<typename T>
-__device__ void matrixRow(T* matrix, T* result, int row,
-                          int matrixRows, int matrixColumns) {
+__device__ void matrixRow(const T* matrix, const int row, T* result,
+                          const int matrixRows, const int matrixColumns) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -264,8 +264,8 @@ __device__ void matrixRow(T* matrix, T* result, int row,
 }
 
 template<typename T>
-__device__ void matrixColumn(T* matrix, T* result, int column,
-                             int matrixRows, int matrixColumns) {
+__device__ void matrixColumn(const T* matrix, const int column, T* result,
+                             const int matrixRows, const int matrixColumns) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -275,8 +275,8 @@ __device__ void matrixColumn(T* matrix, T* result, int column,
 }
 
 template<typename T>
-__device__ void matrixSum(T* matrix, T* result,
-                          int numRows, int numColumns) {
+__device__ void matrixSum(const T* matrix, T* result,
+                          const int numRows, const int numColumns) {
 
   __shared__ T tile[TILE_DIM][TILE_DIM];
 
@@ -312,8 +312,8 @@ __device__ void matrixSum(T* matrix, T* result,
 }
 
 template<typename T>
-__device__ void matrixSumRows(T* matrix, T* result,
-                              int numRows, int numColumns) {
+__device__ void matrixSumRows(const T* matrix, T* result,
+                              const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -330,8 +330,8 @@ __device__ void matrixSumRows(T* matrix, T* result,
 }
 
 template<typename T>
-__device__ void matrixSumColumns(T* matrix, T* result,
-                                 int numRows, int numColumns) {
+__device__ void matrixSumColumns(const T* matrix, T* result,
+                                 const int numRows, const int numColumns) {
 
   __shared__ T tile[TILE_DIM][TILE_DIM];
 
@@ -367,8 +367,8 @@ __device__ void matrixSumColumns(T* matrix, T* result,
 }
 
 template<typename T>
-__device__ void matrixAddRow(T* matrix, T* vector, T* result,
-                             int numRows, int numColumns) {
+__device__ void matrixAddRow(const T* matrix, const T* vector, T* result,
+                             const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -385,8 +385,8 @@ __device__ void matrixAddRow(T* matrix, T* vector, T* result,
 }
 
 template<typename T>
-__device__ void vectorRowAddMatrix(T* vector, T* matrix, T* result,
-                                   int numRows, int numColumns) {
+__device__ void vectorRowAddMatrix(const T* vector, const T* matrix, T* result,
+                                   const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -403,8 +403,8 @@ __device__ void vectorRowAddMatrix(T* vector, T* matrix, T* result,
 }
 
 template<typename T>
-__device__ void matrixAddColumn(T* matrix, T* vector, T* result,
-                                int numRows, int numColumns) {
+__device__ void matrixAddColumn(const T* matrix, const T* vector, T* result,
+                                const int numRows, const int numColumns) {
 
   __shared__ T tile[TILE_DIM];
 
@@ -433,8 +433,8 @@ __device__ void matrixAddColumn(T* matrix, T* vector, T* result,
 }
 
 template<typename T>
-__device__ void vectorColumnAddMatrix(T* vector, T* matrix, T* result,
-                                      int numRows, int numColumns) {
+__device__ void vectorColumnAddMatrix(const T* vector, const T* matrix, T* result,
+                                      const int numRows, const int numColumns) {
 
   __shared__ T tile[TILE_DIM];
 
@@ -463,8 +463,8 @@ __device__ void vectorColumnAddMatrix(T* vector, T* matrix, T* result,
 }
 
 template<typename T>
-__device__ void matrixSubRow(T* matrix, T* vector, T* result,
-                             int numRows, int numColumns) {
+__device__ void matrixSubRow(const T* matrix, const T* vector, T* result,
+                             const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -481,8 +481,8 @@ __device__ void matrixSubRow(T* matrix, T* vector, T* result,
 }
 
 template<typename T>
-__device__ void vectorRowSubMatrix(T* vector, T* matrix, T* result,
-                                   int numRows, int numColumns) {
+__device__ void vectorRowSubMatrix(const T* vector, const T* matrix, T* result,
+                                   const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -499,8 +499,8 @@ __device__ void vectorRowSubMatrix(T* vector, T* matrix, T* result,
 }
 
 template<typename T>
-__device__ void matrixSubColumn(T* matrix, T* vector, T* result,
-                                int numRows, int numColumns) {
+__device__ void matrixSubColumn(const T* matrix, const T* vector, T* result,
+                                const int numRows, const int numColumns) {
 
   __shared__ T tile[TILE_DIM];
 
@@ -529,8 +529,8 @@ __device__ void matrixSubColumn(T* matrix, T* vector, T* result,
 }
 
 template<typename T>
-__device__ void vectorColumnSubMatrix(T* vector, T* matrix, T* result,
-                                      int numRows, int numColumns) {
+__device__ void vectorColumnSubMatrix(const T* vector, const T* matrix, T* result,
+                                      const int numRows, const int numColumns) {
 
   __shared__ T tile[TILE_DIM];
 

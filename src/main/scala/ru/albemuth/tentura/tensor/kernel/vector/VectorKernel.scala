@@ -3,8 +3,10 @@ package ru.albemuth.tentura.tensor.kernel.vector
 import VectorKernel.TILE_DIM
 import jcuda.Pointer
 import jcuda.driver.JCudaDriver
-import ru.albemuth.tentura.kernel.GenericKernel
-import ru.albemuth.tentura.tensor.Vector
+import ru.albemuth.tentura.kernel.{GenericKernel, KernelTemplate}
+import ru.albemuth.tentura.tensor.{Matrix, Vector}
+
+import scala.reflect.ClassTag
 
 /**
   * @author Vladimir Kornyshev { @literal <gnuzzz@mail.ru>}
@@ -33,5 +35,471 @@ abstract class VectorKernel(override val moduleName: String, override val classi
 }
 
 object VectorKernel {
+
   val TILE_DIM = 32
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, Unit, r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], r: => Vector[R]): Vector[R] = {
+    val result = matrix.result(kernel, Unit, r)
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T], r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], matrix, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar: Boolean, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Byte](if (scalar) 1 else 0)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](result.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar: Byte, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Byte](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar: Char, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Char](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar: Short, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Short](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar: Int, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Int](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar: Long, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Long](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar: Float, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Float](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar: Double, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Double](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar: Boolean, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar: Byte, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar: Char, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar: Short, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar: Int, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar: Long, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar: Float, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar: Double, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Boolean, r: => Vector[R]): Vector[R] = {
+    val result = matrix.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Byte](if (scalar) 1 else 0)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Byte, r: => Vector[R]): Vector[R] = {
+    val result = matrix.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Byte](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Char, r: => Vector[R]): Vector[R] = {
+    val result = matrix.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Char](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Short, r: => Vector[R]): Vector[R] = {
+    val result = matrix.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Short](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Int, r: => Vector[R]): Vector[R] = {
+    val result = matrix.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Int](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Long, r: => Vector[R]): Vector[R] = {
+    val result = matrix.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Long](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Float, r: => Vector[R]): Vector[R] = {
+    val result = matrix.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Float](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Double, r: => Vector[R]): Vector[R] = {
+    val result = matrix.result(kernel, scalar, r)
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Double](scalar)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T], scalar: Boolean, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], matrix, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T], scalar: Byte, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], matrix, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T], scalar: Char, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], matrix, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T], scalar: Short, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], matrix, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T], scalar: Int, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], matrix, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T], scalar: Long, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], matrix, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T], scalar: Float, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], matrix, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T], scalar: Double, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], matrix, scalar, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar1: Boolean, scalar2: Boolean, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, (scalar1, scalar2), r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Byte](if (scalar1) 1 else 0)), Pointer.to(Array[Byte](if (scalar2) 1 else 0)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar1: Byte, scalar2: Byte, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, (scalar1, scalar2), r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Byte](scalar1)), Pointer.to(Array[Byte](scalar2)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar1: Char, scalar2: Char, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, (scalar1, scalar2), r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Char](scalar1)), Pointer.to(Array[Char](scalar2)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar1: Short, scalar2: Short, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, (scalar1, scalar2), r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Short](scalar1)), Pointer.to(Array[Short](scalar2)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar1: Int, scalar2: Int, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, (scalar1, scalar2), r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Int](scalar1)), Pointer.to(Array[Int](scalar2)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar1: Long, scalar2: Long, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, (scalar1, scalar2), r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Long](scalar1)), Pointer.to(Array[Long](scalar2)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar1: Float, scalar2: Float, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, (scalar1, scalar2), r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Float](scalar1)), Pointer.to(Array[Float](scalar2)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], scalar1: Double, scalar2: Double, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, (scalar1, scalar2), r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(Array[Double](scalar1)), Pointer.to(Array[Double](scalar2)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar1: Boolean, scalar2: Boolean, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar1, scalar2, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar1: Byte, scalar2: Byte, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar1, scalar2, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar1: Char, scalar2: Char, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar1, scalar2, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar1: Short, scalar2: Short, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar1, scalar2, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar1: Int, scalar2: Int, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar1, scalar2, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar1: Long, scalar2: Long, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar1, scalar2, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar1: Float, scalar2: Float, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar1, scalar2, r)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], scalar1: Double, scalar2: Double, r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T], vector, scalar1, scalar2, r)
+  }
+
+  def vector[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: VectorKernel, vector1: Vector[T1], vector2: Vector[T2], r: => Vector[R]): Vector[R] = {
+    val result = vector1.result(kernel, vector2, r)
+    val params = Pointer.to(
+      Pointer.to(vector1.deviceDataPtr), Pointer.to(vector2.deviceDataPtr), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector1.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector1: Vector[T1], vector2: Vector[T2], r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T1], vector1, vector2, r)
+  }
+
+  def vector[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T1], matrix: Matrix[T2], r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, matrix, r)
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(matrix.deviceDataPtr), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T1], matrix: Matrix[T2], r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T1], vector, matrix, r)
+  }
+
+  def vector[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T1], vector: Vector[T2], r: => Vector[R]): Vector[R] = {
+    val result = matrix.result(kernel, vector, r)
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(vector.deviceDataPtr), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T1], vector: Vector[T2], r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T1], matrix, vector, r)
+  }
+
 }
