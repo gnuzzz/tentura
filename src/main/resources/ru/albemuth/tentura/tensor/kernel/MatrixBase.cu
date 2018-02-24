@@ -1,12 +1,12 @@
-extern "C"
-__global__ void matrixMulMatrix(float *A, float *B, float *C,
+template<typename T>
+__device__ void matrixMulMatrix(T *A, T *B, T *C,
                                 int numARows, int numAColumns,
                                 int numBRows, int numBColumns,
                                 int numCRows, int numCColumns) {
   int column = threadIdx.x + blockDim.x * blockIdx.x;
   int row = threadIdx.y + blockDim.y * blockIdx.y;
   if (column < numCColumns && row < numCRows) {
-    float cValue = 0.0f;
+    T cValue = 0;
     for (int i = 0; i < numAColumns; i++) {
       cValue += A[row * numAColumns + i] * B[i * numBColumns + column];
     }
@@ -14,8 +14,8 @@ __global__ void matrixMulMatrix(float *A, float *B, float *C,
   }
 }
 
-extern "C"
-__global__ void matrixTranspose(float* A, float* C,
+template<typename T>
+__device__ void matrixTranspose(T* A, T* C,
                                 int numARows, int numAColumns) {
 
   int bx = blockIdx.x;

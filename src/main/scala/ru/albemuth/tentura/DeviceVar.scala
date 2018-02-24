@@ -20,6 +20,12 @@ trait DeviceVar[T] {
 
   def copy2host(): Unit = {
     JCudaDriver.cuMemcpyDtoH(dataPointer, deviceDataPtr, data.length * sizeOfItem(data))
+    if (data.getClass.getComponentType == classOf[Boolean]) {
+      val bytes = dataPointer.getByteBuffer(0, data.length).array()
+      for (i <- data.indices) {
+        data(i) = (bytes(i) > 0).asInstanceOf[T]
+      }
+    }
   }
 
   def release(): Unit = {

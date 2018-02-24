@@ -1,7 +1,7 @@
 package ru.albemuth.tentura.samples
 
 import org.scalatest.FunSuite
-import ru.albemuth.tentura.tensor.Functions._
+import ru.albemuth.tentura.tensor.MathFunctions._
 import ru.albemuth.tentura.tensor.Scalar._
 import ru.albemuth.tentura.tensor.{Matrix, Vector}
 

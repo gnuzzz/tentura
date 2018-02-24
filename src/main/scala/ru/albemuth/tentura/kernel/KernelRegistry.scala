@@ -5,6 +5,6 @@ package ru.albemuth.tentura.kernel
   */
 object KernelRegistry {
 
-  def classifier(kernel: JCudaKernel): String = "" //todo
+  def classifier[K <: JCudaKernel](kernelClass: Class[K]): String = "" //todo
 
 }

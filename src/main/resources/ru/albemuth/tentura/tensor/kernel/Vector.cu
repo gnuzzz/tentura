@@ -1,7 +1,7 @@
 #define TILE_DIM 32
 
-extern "C"
-__global__ void vectorAddVector(float* A, float* B, float* C, int length) {
+template<typename T>
+__device__ void vectorAddVector(T* A, T* B, T* C, int length) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -13,8 +13,8 @@ __global__ void vectorAddVector(float* A, float* B, float* C, int length) {
   }
 }
 
-extern "C"
-__global__ void vectorAddScalar(float* A, float scalar, float* C, int length) {
+template<typename T>
+__device__ void vectorAddScalar(T* A, T scalar, T* C, int length) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -26,8 +26,8 @@ __global__ void vectorAddScalar(float* A, float scalar, float* C, int length) {
   }
 }
 
-extern "C"
-__global__ void vectorSubVector(float* A, float* B, float* C, int length) {
+template<typename T>
+__device__ void vectorSubVector(T* A, T* B, T* C, int length) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -39,8 +39,8 @@ __global__ void vectorSubVector(float* A, float* B, float* C, int length) {
   }
 }
 
-extern "C"
-__global__ void vectorSubScalar(float* A, float scalar, float* C, int length) {
+template<typename T>
+__device__ void vectorSubScalar(T* A, T scalar, T* C, int length) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -52,8 +52,8 @@ __global__ void vectorSubScalar(float* A, float scalar, float* C, int length) {
   }
 }
 
-extern "C"
-__global__ void scalarSubVector(float scalar, float* A, float* C, int length) {
+template<typename T>
+__device__ void scalarSubVector(T scalar, T* A, T* C, int length) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -65,8 +65,8 @@ __global__ void scalarSubVector(float scalar, float* A, float* C, int length) {
   }
 }
 
-extern "C"
-__global__ void vectorMulScalar(float* A, float scalar, float* C, int length) {
+template<typename T>
+__device__ void vectorMulScalar(T* A, T scalar, T* C, int length) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -78,14 +78,14 @@ __global__ void vectorMulScalar(float* A, float scalar, float* C, int length) {
   }
 }
 
-extern "C"
-__global__ void vectorMulVector(float* A, float* B, float* result, int length) {
-  __shared__ float a_tile[TILE_DIM];
-  __shared__ float b_tile[TILE_DIM];
+template<typename T>
+__device__ void vectorMulVector(T* A, T* B, T* result, int length) {
+  __shared__ T a_tile[TILE_DIM];
+  __shared__ T b_tile[TILE_DIM];
 
-  __shared__ float result_tile[TILE_DIM];
+  __shared__ T result_tile[TILE_DIM];
   for (int i = 0; i < TILE_DIM; i++) {
-    result_tile[i] = 0.0f;
+    result_tile[i] = 0;
   }
 
   int tx = threadIdx.x;
@@ -96,8 +96,8 @@ __global__ void vectorMulVector(float* A, float* B, float* result, int length) {
       a_tile[tx] = A[index];
       b_tile[tx] = B[index];
     } else {
-      a_tile[tx] = 0.0f;
-      b_tile[tx] = 0.0f;
+      a_tile[tx] = 0;
+      b_tile[tx] = 0;
     }
     __syncthreads();
 
@@ -105,7 +105,7 @@ __global__ void vectorMulVector(float* A, float* B, float* result, int length) {
     __syncthreads();
   }
 
-  float resultValue = 0.0f;
+  T resultValue = 0;
   if (tx == 0) {
     for (int i = 0; i < TILE_DIM; i++) {
       resultValue += result_tile[i];
@@ -114,20 +114,20 @@ __global__ void vectorMulVector(float* A, float* B, float* result, int length) {
   }
 }
 
-extern "C"
-__global__ void matrixMulVector(float* matrix, float* vector, float* result,
+template<typename T>
+__device__ void matrixMulVector(T* matrix, T* vector, T* result,
                                 int matrixRows, int matrixColumns,
                                 int vectorLength, int resultLength) {
 
-  __shared__ float matrix_tile[TILE_DIM][TILE_DIM];
-  __shared__ float vector_tile[TILE_DIM];
+  __shared__ T matrix_tile[TILE_DIM][TILE_DIM];
+  __shared__ T vector_tile[TILE_DIM];
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
 
   int baseRow = bx * blockDim.x;
   int index = baseRow + tx;
-  float resultValue = 0.0f;
+  T resultValue = 0;
 
   for (int t = 0; t < (matrixColumns - 1) / TILE_DIM + 1; t++) {
     int column = t * TILE_DIM + tx;
@@ -138,13 +138,13 @@ __global__ void matrixMulVector(float* matrix, float* vector, float* result,
         if (row < matrixRows) {
           matrix_tile[i][tx] = matrix[row * matrixColumns + column];
         } else {
-          matrix_tile[i][tx] = 0.0f;
+          matrix_tile[i][tx] = 0;
         }
       }
     } else {
-      vector_tile[tx] = 0.0f;
+      vector_tile[tx] = 0;
       for (int i = 0; i < TILE_DIM; i++) {
-        matrix_tile[i][tx] = 0.0f;
+        matrix_tile[i][tx] = 0;
       }
     }
     __syncthreads();
@@ -160,27 +160,27 @@ __global__ void matrixMulVector(float* matrix, float* vector, float* result,
   }
 }
 
-extern "C"
-__global__ void vectorMulMatrix(float* vector, float* matrix, float* result,
+template<typename T>
+__device__ void vectorMulMatrix(T* vector, T* matrix, T* result,
                                 int vectorLength,
                                 int matrixRows, int matrixColumns,
                                 int resultLength) {
 
-  __shared__ float vector_tile[TILE_DIM];
-  __shared__ float matrix_tile[TILE_DIM][TILE_DIM];
+  __shared__ T vector_tile[TILE_DIM];
+  __shared__ T matrix_tile[TILE_DIM][TILE_DIM];
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
 
   int index = bx * blockDim.x + tx;
-  float resultValue = 0.0f;
+  T resultValue = 0;
 
   for (int t = 0; t < (matrixRows - 1) / TILE_DIM + 1; t++) {
     int idx = t * TILE_DIM + tx;
     if (idx < vectorLength) {
       vector_tile[tx] = vector[idx];
     } else {
-      vector_tile[tx] = 0.0f;
+      vector_tile[tx] = 0;
     }
     if (index < matrixColumns) {
       int firstTileRow = t * TILE_DIM;
@@ -189,12 +189,12 @@ __global__ void vectorMulMatrix(float* vector, float* matrix, float* result,
         if (row < matrixRows) {
           matrix_tile[i][tx] = matrix[row * matrixColumns + index];
         } else {
-          matrix_tile[i][tx] = 0.0f;
+          matrix_tile[i][tx] = 0;
         }
       }
     } else {
       for (int i = 0; i < TILE_DIM; i++) {
-        matrix_tile[i][tx] = 0.0f;
+        matrix_tile[i][tx] = 0;
       }
     }
     __syncthreads();
@@ -211,10 +211,10 @@ __global__ void vectorMulMatrix(float* vector, float* matrix, float* result,
 
 }
 
-extern "C"
-__global__ void vectorMatrixMulVector(float* vectorA, float* vectorB, float* resultMatrix, int lengthA, int lengthB) {
-  __shared__ float vectorA_tile[TILE_DIM];
-  __shared__ float vectorB_tile[TILE_DIM];
+template<typename T>
+__device__ void vectorMatrixMulVector(T* vectorA, T* vectorB, T* resultMatrix, int lengthA, int lengthB) {
+  __shared__ T vectorA_tile[TILE_DIM];
+  __shared__ T vectorB_tile[TILE_DIM];
 
   int bx = blockIdx.x;
   int by = blockIdx.y;
@@ -239,8 +239,8 @@ __global__ void vectorMatrixMulVector(float* vectorA, float* vectorB, float* res
   }
 }
 
-extern "C"
-__global__ void vectorElementWiseMulVector(float* A, float* B, float* C, int length) {
+template<typename T>
+__device__ void vectorElementWiseMulVector(T* A, T* B, T* C, int length) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -252,8 +252,8 @@ __global__ void vectorElementWiseMulVector(float* A, float* B, float* C, int len
   }
 }
 
-extern "C"
-__global__ void vectorDivScalar(float* A, float scalar, float* C, int length) {
+template<typename T>
+__device__ void vectorDivScalar(T* A, T scalar, T* C, int length) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -265,8 +265,8 @@ __global__ void vectorDivScalar(float* A, float scalar, float* C, int length) {
   }
 }
 
-extern "C"
-__global__ void scalarDivVector(float scalar, float* A, float* C, int length) {
+template<typename T>
+__device__ void scalarDivVector(T scalar, T* A, T* C, int length) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -278,8 +278,8 @@ __global__ void scalarDivVector(float scalar, float* A, float* C, int length) {
   }
 }
 
-extern "C"
-__global__ void vectorElementWiseDivVector(float* A, float* B, float* C, int length) {
+template<typename T>
+__device__ void vectorElementWiseDivVector(T* A, T* B, T* C, int length) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -291,61 +291,8 @@ __global__ void vectorElementWiseDivVector(float* A, float* B, float* C, int len
   }
 }
 
-extern "C"
-__global__ void vectorSigmoid(float* vector, float* result, int length) {
-
-  int bx = blockIdx.x;
-  int tx = threadIdx.x;
-
-  int index = bx * blockDim.x + tx;
-
-  if (index < length) {
-    result[index] = 1.0f / (1.0f + exp(-vector[index]));
-  }
-}
-
-extern "C"
-__global__ void vectorPow2(float* vector, float* result, int length) {
-
-  int bx = blockIdx.x;
-  int tx = threadIdx.x;
-
-  int index = bx * blockDim.x + tx;
-
-  if (index < length) {
-    float vectorIndex = vector[index];
-    result[index] = vectorIndex * vectorIndex;
-  }
-}
-
-extern "C"
-__global__ void vectorPow(float* vector, float power, float* result, int length) {
-
-  int bx = blockIdx.x;
-  int tx = threadIdx.x;
-
-  int index = bx * blockDim.x + tx;
-
-  if (index < length) {
-    result[index] = pow(vector[index], power);
-  }
-}
-
-extern "C"
-__global__ void vectorExp(float* vector, float* result, int length) {
-
-  int bx = blockIdx.x;
-  int tx = threadIdx.x;
-
-  int index = bx * blockDim.x + tx;
-
-  if (index < length) {
-    result[index] = exp(vector[index]);
-  }
-}
-
-extern "C"
-__global__ void vectorSum(float* vector, float* result, int length) {
+template<typename T>
+__device__ void vectorSum(T* vector, T* result, int length) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;

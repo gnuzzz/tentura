@@ -5,7 +5,7 @@ import jcuda.driver.JCudaDriver
 import org.scalatest.FunSuiteLike
 import ru.albemuth.tentura.kernel.JCudaKernel
 import ru.albemuth.tentura.performance.MatrixPerformance
-import ru.albemuth.tentura.tensor.Functions.sigmoid
+import ru.albemuth.tentura.tensor.MathFunctions.sigmoid
 
 /**
   * @author Vladimir Kornyshev { @literal <gnuzzz@mail.ru>}
