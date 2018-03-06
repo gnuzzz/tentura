@@ -401,8 +401,6 @@ class TestVector extends FunSuite with TestUtils {
       result.copy2host()
       val nativeResult = nativeA / scalar
 
-      val error = errors(Array(result.values().map(_.toFloat)), Array(nativeResult.data.map(_.toLong.toFloat))).head
-
       val maxError = compare(result.values().map(_.toFloat), nativeResult.data.map(_.toLong.toFloat))
       assert(maxError < 0.0001)
     }
@@ -695,18 +693,6 @@ class TestVector extends FunSuite with TestUtils {
     }
   }
 
-  test("vector sum") {
-    val nativeA = NativeVector.vector(ROWS)
-    val a = Vector.of(nativeA.data)
-
-    val result = a.sum()
-    result.copy2host()
-
-    val nativeResult = nativeA.sum()
-
-    assert(result.value() === nativeResult)
-  }
-
   test("vector row add matrix") {
     val nativeA = NativeVector.vector(COLUMNS)
     val nativeB = NativeMatrix.matrix(ROWS, COLUMNS)
@@ -767,13 +753,32 @@ class TestVector extends FunSuite with TestUtils {
     println(s"$maxError")
   }
 
-  test("aaa") {
-//    val v = Vector.of(Array(64.toByte))
-//    val v = Vector.of(Array(63.toByte))
-    val v = Vector.of(Array(64.toShort))
-    val r = v ^ 3
-    r.copy2host()
-    println(r.values()(0))
+  test("vector(i)") {
+    val data = NativeVector.vectorData(ROWS)
+    val a = Vector.of(data)
+    val index = (Math.random() * ROWS).toInt
+    val value = a(index)
+    value.copy2host()
+    assert(value.value() === data(index))
+  }
+
+  test("vector(from, to") {
+    val data = NativeVector.vectorData(ROWS)
+    val a = Vector.of(data)
+    val index1 = Math.random() * ROWS
+    val index2 = Math.random() * ROWS
+    val from = Math.min(index1, index2).toInt
+    val to = Math.max(index1, index2).toInt
+
+    def check(vector: Vector[Float], data: Array[Float]): Unit = {
+      vector.copy2host()
+      val maxError = compare(vector.values(), data)
+      assert(maxError === 0)
+    }
+
+    check(a.slice(0, to), data.slice(0, to))
+    check(a.slice(from, to), data.slice(from, to))
+
   }
 
 }

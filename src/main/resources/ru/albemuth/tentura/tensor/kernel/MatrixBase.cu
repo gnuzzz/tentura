@@ -1,8 +1,7 @@
 template<typename T>
-__device__ void matrixMulMatrix(T *A, T *B, T *C,
-                                int numARows, int numAColumns,
-                                int numBRows, int numBColumns,
-                                int numCRows, int numCColumns) {
+__device__ void matrixMulMatrix(const T *Aconst , T *B, T *C,
+                                const int numARows, const int numAColumns,
+                                const int numBRows, const int numBColumns) {
   int column = threadIdx.x + blockDim.x * blockIdx.x;
   int row = threadIdx.y + blockDim.y * blockIdx.y;
   if (column < numCColumns && row < numCRows) {

@@ -1,5 +1,5 @@
 template<typename T>
-__device__ void vectorMulVector(T* A, T* B, T* result, int length) {
+__device__ void vectorMulVector(const T* A, const T* B, T* result, const int length) {
   T resultValue = 0;
   for (int i = 0; i < length; i++) {
     resultValue += A[i] * B[i];
@@ -8,18 +8,17 @@ __device__ void vectorMulVector(T* A, T* B, T* result, int length) {
 }
 
 template<typename T>
-__device__ void matrixMulVector(T* matrix, T* vector, T* result,
-                                int matrixRows, int matrixColumns,
-                                int vectorLength, int resultLength) {
+__device__ void matrixMulVector(const T* matrix, const T* vector, T* result,
+                                const int matrixRows, const int matrixColumns) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
   int index = bx * blockDim.x + tx;
 
-  if (index < resultLength) {
+  if (index < matrixColumns) {
     T resultValue = 0;
     int rowStart = index * matrixColumns;
-    for (int i = 0; i < vectorLength; i++) {
+    for (int i = 0; i < matrixColumns; i++) {
       resultValue += matrix[rowStart + i] * vector[i];
     }
 
@@ -29,18 +28,16 @@ __device__ void matrixMulVector(T* matrix, T* vector, T* result,
 }
 
 template<typename T>
-__device__ void vectorMulMatrix(T* vector, T* matrix, T* result,
-                                int vectorLength,
-                                int matrixRows, int matrixColumns,
-                                int resultLength) {
+__device__ void vectorMulMatrix(const T* vector, const T* matrix, T* result,
+                                const int matrixRows, const int matrixColumns) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
   int index = bx * blockDim.x + tx;
 
-  if (index < resultLength) {
+  if (index < matrixRows) {
     T resultValue = 0;
-    for (int i = 0; i < vectorLength; i++) {
+    for (int i = 0; i < matrixRows; i++) {
       resultValue += vector[i] * matrix[index + i * matrixColumns];
     }
     result[index] = resultValue;
@@ -49,7 +46,8 @@ __device__ void vectorMulMatrix(T* vector, T* matrix, T* result,
 }
 
 template<typename T>
-__device__ void vectorMatrixMulVector(T* vectorA, T* vectorB, T* resultMatrix, int lengthA, int lengthB) {
+__device__ void vectorMatrixMulVector(const T* vectorA, const T* vectorB, T* resultMatrix,
+                                      const int lengthA, const int lengthB) {
   int bx = blockIdx.x;
   int by = blockIdx.y;
   int tx = threadIdx.x;

@@ -1,6 +1,6 @@
 template<typename T>
-__device__ void matrixColumnsValues(T* matrix, int* columnsIndices, T* result,
-                                    int numRows, int numColumns) {
+__device__ void matrixColumnsValues(const T* matrix, const int* columnsIndices, T* result,
+                                    const int numRows, const int numColumns) {
 
   int by = blockIdx.y;
   int ty = threadIdx.y;

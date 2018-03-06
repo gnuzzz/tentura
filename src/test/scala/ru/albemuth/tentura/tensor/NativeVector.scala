@@ -201,6 +201,22 @@ class NativeVector(v: Array[Float]) {
     data.sum
   }
 
+  def max(): Float = {
+    data.max
+  }
+
+  def min(): Float = {
+    data.min
+  }
+
+  def argmax(): Int = {
+    data.zipWithIndex.maxBy(_._1)._2
+  }
+
+  def argmin(): Int = {
+    data.zipWithIndex.minBy(_._1)._2
+  }
+
 }
 
 object NativeVector {
