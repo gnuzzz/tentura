@@ -6,12 +6,12 @@ import ru.albemuth.tentura.tensor.Scalar._
 /**
   * @author Vladimir Kornyshev { @literal <gnuzzz@mail.ru>}
   */
-class TestMatrix extends FunSuite with TestUtils {
+class TestMatrix extends FunSuite with TestUtils with TestWithResult {
 
-  val ROWS = 513
+//  val ROWS = 513
 //  val ROWS = 1024
 //  val ROWS = 4
-  val COLUMNS = 131
+//  val COLUMNS = 131
 //  val COLUMNS = 1024
 //  val COLUMNS = 2
 
@@ -23,11 +23,14 @@ class TestMatrix extends FunSuite with TestUtils {
     val b = Matrix.of(nativeB.data)
 
     val result = a + b
-    result.copy2host()
     val nativeResult = nativeA + nativeB
 
     val maxError = compare(result.values(), nativeResult.data)
     assert(maxError === 0.0f)
+  }
+
+  test("matrix + matrix, result") {
+    testWithResultMM_M[Float, Float](matrix(ROWS, COLUMNS), matrix(ROWS, COLUMNS), _ + _, _ + (_, _))
   }
 
   test("matrix + scalar") {
@@ -38,7 +41,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 11.toByte
 
       val result = a + scalar
-      result.copy2host()
       val nativeResult = nativeA + scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toByte.toFloat)))
@@ -51,7 +53,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 11.toShort
 
       val result = a + scalar
-      result.copy2host()
       val nativeResult = nativeA + scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toShort.toFloat)))
@@ -64,7 +65,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 11
 
       val result = a + scalar
-      result.copy2host()
       val nativeResult = nativeA + scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toInt.toFloat)))
@@ -77,7 +77,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 11l
 
       val result = a + scalar
-      result.copy2host()
       val nativeResult = nativeA + scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toLong.toFloat)))
@@ -90,7 +89,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 11.2f
 
       val result = a + scalar
-      result.copy2host()
       val nativeResult = nativeA + scalar
 
       val maxError = compare(result.values(), nativeResult.data)
@@ -103,12 +101,15 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 11.2
 
       val result = a + scalar
-      result.copy2host()
       val nativeResult = nativeA + scalar.toFloat
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toDouble.toFloat)))
       assert(maxError < 0.0001)
     }
+  }
+
+  test("matrix + scalar, result") {
+    testWithResultMS_M(matrix(ROWS, COLUMNS), Math.random().toFloat, _ + _, _ + (_, _))
   }
 
   test("matrix - matrix") {
@@ -118,11 +119,14 @@ class TestMatrix extends FunSuite with TestUtils {
     val b = Matrix.of(nativeB.data)
 
     val result = a - b
-    result.copy2host()
     val nativeResult = nativeA - nativeB
 
     val maxError = compare(result.values(), nativeResult.data)
     assert(maxError === 0.0f)
+  }
+
+  test("matrix - matrix, result") {
+    testWithResultMM_M[Float, Float](matrix(ROWS, COLUMNS), matrix(ROWS, COLUMNS), _ - _, _ - (_, _))
   }
 
   test("matrix - scalar") {
@@ -133,7 +137,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22.toByte
 
       val result = a - scalar
-      result.copy2host()
       val nativeResult = nativeA - scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toByte.toFloat)))
@@ -146,7 +149,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22.toShort
 
       val result = a - scalar
-      result.copy2host()
       val nativeResult = nativeA - scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toShort.toFloat)))
@@ -159,7 +161,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22
 
       val result = a - scalar
-      result.copy2host()
       val nativeResult = nativeA - scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toInt.toFloat)))
@@ -172,7 +173,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22l
 
       val result = a - scalar
-      result.copy2host()
       val nativeResult = nativeA - scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toLong.toFloat)))
@@ -185,7 +185,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22.1f
 
       val result = a - scalar
-      result.copy2host()
       val nativeResult = nativeA - scalar
 
       val maxError = compare(result.values(), nativeResult.data)
@@ -198,12 +197,15 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22.1
 
       val result = a - scalar
-      result.copy2host()
       val nativeResult = nativeA - scalar.toFloat
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toDouble.toFloat)))
       assert(maxError < 0.0001)
     }
+  }
+
+  test("matrix - scalar, result") {
+    testWithResultMS_M(matrix(ROWS, COLUMNS), Math.random().toFloat, _ - _, _ - (_, _))
   }
 
   test("scalar - matrix") {
@@ -214,7 +216,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22.toByte
 
       val result = scalar - a
-      result.copy2host()
       val nativeResult = scalar - nativeA
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toByte.toFloat)))
@@ -227,7 +228,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22.toShort
 
       val result = scalar - a
-      result.copy2host()
       val nativeResult = scalar - nativeA
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toShort.toFloat)))
@@ -240,7 +240,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22
 
       val result = scalar - a
-      result.copy2host()
       val nativeResult = scalar - nativeA
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toInt.toFloat)))
@@ -253,7 +252,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22l
 
       val result = scalar - a
-      result.copy2host()
       val nativeResult = scalar - nativeA
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toLong.toFloat)))
@@ -266,7 +264,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22.1f
 
       val result = scalar - a
-      result.copy2host()
       val nativeResult = scalar - nativeA
 
       val maxError = compare(result.values(), nativeResult.data)
@@ -279,12 +276,15 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22.1
 
       val result = scalar - a
-      result.copy2host()
       val nativeResult = scalar.toFloat - nativeA
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toDouble.toFloat)))
       assert(maxError < 0.0001)
     }
+  }
+
+  test("scalar - matrix, result") {
+    testWithResultMS_M(matrix(ROWS, COLUMNS), Math.random().toFloat, (m: Matrix[Float], s: Float) => s - m, (m: Matrix[Float], s: Float, r: Matrix[Float]) => s - (m, r))
   }
 
   test("matrix * matrix") {
@@ -301,7 +301,6 @@ class TestMatrix extends FunSuite with TestUtils {
 //      Array(-0.90989643f, -0.4892239f)
 //    ))
     val result = a * b
-    result.copy2host()
     val nativeResult = nativeA * nativeB
 
 //    val error = errors(result.values(), nativeResult.data).filter(_._3 >= 0.01).head
@@ -331,6 +330,10 @@ class TestMatrix extends FunSuite with TestUtils {
 //    printMatrix(nativeResult.data)
   }
 
+  test("matrix * matrix, result") {
+    testWithResultMM_M[Float, Float](matrix(ROWS, COLUMNS), matrix(COLUMNS, ROWS), _ * _, _ * (_, _))
+  }
+
   test("matrix * vector") {
 //    val nativeA = NativeMatrix(Array(Array(1.0f, 2.0f, 3.0f), Array(4.0f, 5.0f, 6.0f)))
 //    val nativeB = NativeVector(Array(7.0f, 8.0f, 9.0f))
@@ -340,7 +343,6 @@ class TestMatrix extends FunSuite with TestUtils {
     val b = Vector.of(nativeB.data)
 
     val result = a * b
-    result.copy2host()
     val nativeResult = nativeA * nativeB
 
 //    printMatrix(nativeA.data)
@@ -353,6 +355,10 @@ class TestMatrix extends FunSuite with TestUtils {
     println(s"$maxError")
   }
 
+  test("matrix * vector, result") {
+    testWithResultMV_V[Float, Float, Float](matrix(ROWS, COLUMNS), vector(COLUMNS), _ * _, _ * (_, _))
+  }
+
   test("matrix * scalar") {
     {
       val data = NativeMatrix.matrixData[Byte](ROWS, COLUMNS)
@@ -361,7 +367,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 33.toByte
 
       val result = a * scalar
-      result.copy2host()
       val nativeResult = nativeA * scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toByte.toFloat)))
@@ -374,7 +379,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 33.toShort
 
       val result = a * scalar
-      result.copy2host()
       val nativeResult = nativeA * scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toShort.toFloat)))
@@ -387,7 +391,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 33
 
       val result = a * scalar
-      result.copy2host()
       val nativeResult = nativeA * scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toInt.toFloat)))
@@ -400,7 +403,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 33l
 
       val result = a * scalar
-      result.copy2host()
       val nativeResult = nativeA * scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toLong.toFloat)))
@@ -413,7 +415,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 33.4f
 
       val result = a * scalar
-      result.copy2host()
       val nativeResult = nativeA * scalar
 
       val maxError = compare(result.values(), nativeResult.data)
@@ -426,12 +427,15 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 33.4
 
       val result = a * scalar
-      result.copy2host()
       val nativeResult = nativeA * scalar.toFloat
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toDouble.toFloat)))
       assert(maxError < 0.0001)
     }
+  }
+
+  test("matrix * scalar, result") {
+    testWithResultMS_M(matrix(ROWS, COLUMNS), Math.random().toFloat, _ * _, _ * (_, _))
   }
 
   test("matrix :* matrix") {
@@ -441,11 +445,14 @@ class TestMatrix extends FunSuite with TestUtils {
     val b = Matrix.of(nativeB.data)
 
     val result = a :* b
-    result.copy2host()
     val nativeResult = nativeA :* nativeB
 
     val maxError = compare(result.values(), nativeResult.data)
     assert(maxError === 0.0f)
+  }
+
+  test("matrix :* matrix, result") {
+    testWithResultMM_M[Float, Float](matrix(ROWS, COLUMNS), matrix(ROWS, COLUMNS), _ :* _, _ :* (_, _))
   }
 
   test("matrix / scalar") {
@@ -456,7 +463,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 44.toByte
 
       val result = a / scalar
-      result.copy2host()
       val nativeResult = nativeA / scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toByte.toFloat)))
@@ -469,7 +475,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 44.toShort
 
       val result = a / scalar
-      result.copy2host()
       val nativeResult = nativeA / scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toShort.toFloat)))
@@ -482,7 +487,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 44
 
       val result = a / scalar
-      result.copy2host()
       val nativeResult = nativeA / scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toInt.toFloat)))
@@ -495,7 +499,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 44l
 
       val result = a / scalar
-      result.copy2host()
       val nativeResult = nativeA / scalar
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toLong.toFloat)))
@@ -508,7 +511,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 44.1f
 
       val result = a / scalar
-      result.copy2host()
       val nativeResult = nativeA / scalar
 
       val maxError = compare(result.values(), nativeResult.data)
@@ -521,12 +523,15 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 44.1
 
       val result = a / scalar
-      result.copy2host()
       val nativeResult = nativeA / scalar.toFloat
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toDouble.toFloat)))
       assert(maxError < 0.0001)
     }
+  }
+
+  test("matrix / scalar, result") {
+    testWithResultMS_M(matrix(ROWS, COLUMNS), Math.random().toFloat, _ / _, _ / (_, _))
   }
 
   test("scalar / matrix") {
@@ -537,7 +542,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22.toByte
 
       val result = scalar / a
-      result.copy2host()
       val nativeResult = scalar / nativeA
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toByte.toFloat)))
@@ -550,7 +554,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22.toShort
 
       val result = scalar / a
-      result.copy2host()
       val nativeResult = scalar / nativeA
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toShort.toFloat)))
@@ -563,7 +566,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22
 
       val result = scalar / a
-      result.copy2host()
       val nativeResult = scalar / nativeA
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toInt.toFloat)))
@@ -576,7 +578,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22l
 
       val result = scalar / a
-      result.copy2host()
       val nativeResult = scalar / nativeA
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toLong.toFloat)))
@@ -589,7 +590,6 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22.1f
 
       val result = scalar / a
-      result.copy2host()
       val nativeResult = scalar / nativeA
 
       val maxError = compare(result.values(), nativeResult.data)
@@ -602,12 +602,15 @@ class TestMatrix extends FunSuite with TestUtils {
       val scalar = 22.1
 
       val result = scalar / a
-      result.copy2host()
       val nativeResult = scalar.toFloat / nativeA
 
       val maxError = compare(result.values().map(_.map(_.toFloat)), nativeResult.data.map(_.map(_.toDouble.toFloat)))
       assert(maxError < 0.0001)
     }
+  }
+
+  test("scalar / matrix, result") {
+    testWithResultMS_M(matrix(ROWS, COLUMNS), Math.random().toFloat, (m: Matrix[Float], s: Float) => s / m, (m: Matrix[Float], s: Float, r: Matrix[Float]) => s / (m, r))
   }
 
   test("matrix :/ matrix") {
@@ -617,45 +620,44 @@ class TestMatrix extends FunSuite with TestUtils {
     val b = Matrix.of(nativeB.data)
 
     val result = a :/ b
-    result.copy2host()
     val nativeResult = nativeA :/ nativeB
 
     val maxError = compare(result.values(), nativeResult.data)
     assert(maxError === 0.0f)
   }
 
-  test("matrix pow") {
+  test("matrix :/ matrix, result") {
+    testWithResultMM_M[Float, Float](matrix(ROWS, COLUMNS), matrix(ROWS, COLUMNS), _ :/ _, _ :/ (_, _))
+  }
+
+  test("matrix ^ pow") {
     val nativeA = NativeMatrix.matrix(ROWS, COLUMNS)
     val a = Matrix.of(nativeA.data)
 
     val result1 = a ^ 0.5f
-    result1.copy2host()
     val nativeResult1 = nativeA ^ 0.5f
 
     val maxError1 = compare(result1.values(), nativeResult1.data)
     assert(maxError1 < 0.0001)
 
     val result2 = a ^ 2
-    result2.copy2host()
     val nativeResult2 = nativeA ^ 2
 
     val maxError2 = compare(result2.values(), nativeResult2.data)
     assert(maxError2 < 0.0001)
 
     val result3 = a ^ 3
-    result3.copy2host()
     val nativeResult3 = nativeA ^ 3
 
     val maxError3 = compare(result3.values(), nativeResult3.data)
     assert(maxError3 < 0.0001)
   }
 
-  test("matrix.t") {
+  test("matrix.T") {
     val nativeA = NativeMatrix.matrix(ROWS, COLUMNS)
     val a = Matrix.of(nativeA.data)
 
-    val result = a.t
-    result.copy2host()
+    val result = a.T
     val nativeResult = nativeA.t
 
     val maxError = compare(result.values(), nativeResult.data)
@@ -663,73 +665,49 @@ class TestMatrix extends FunSuite with TestUtils {
     assert(maxError === 0.0f) //todo
   }
 
-  test("matrix.row") {
+  test("matrix.T, result") {
+    testWithResultM_M(matrix(ROWS, COLUMNS), _.T, _.T(_))
+  }
+
+  test("matrix.row(i)") {
     val nativeA = NativeMatrix.matrix(ROWS, COLUMNS)
     val a = Matrix.of(nativeA.data)
 
     val result = a.row(ROWS / 3)
-    result.copy2host()
     val nativeResult = nativeA.row(ROWS / 3)
 
     val maxError = compare(result.values(), nativeResult.data)
     assert(maxError === 0.0f)
   }
 
-  test("matrix.column") {
+  test("matrix.row(i, result)") {
+    testWithResultMS_V(matrix(ROWS, COLUMNS), ROWS / 3, _.row(_), _.row(_, _))
+  }
+
+  test("matrix.column(i)") {
     val nativeA = NativeMatrix.matrix(ROWS, COLUMNS)
     val a = Matrix.of(nativeA.data)
 
     val result = a.column(COLUMNS / 3)
-    result.copy2host()
     val nativeResult = nativeA.column(COLUMNS / 3)
 
     val maxError = compare(result.values(), nativeResult.data)
     assert(maxError === 0.0f)
   }
 
-  test("matrix sum") {
-    val nativeA = NativeMatrix.matrix(ROWS, COLUMNS)
-    val a = Matrix.of(nativeA.data)
-
-    val result = a.sum()
-    result.copy2host()
-    val nativeResult = nativeA.sum()
-
-    assert(Math.abs(result.value() - nativeResult) / Math.abs(nativeResult) < 0.0001)
+  test("matrix.column(j, result)") {
+    testWithResultMS_V(matrix(ROWS, COLUMNS), COLUMNS / 3, _.column(_), _.column(_, _))
   }
 
-  test("matrix sum rows") {
-    val nativeA = NativeMatrix.matrix(ROWS, COLUMNS)
-    val a = Matrix.of(nativeA.data)
-
-    val result = a.sum(axis = 0)
-    result.copy2host()
-    val nativeResult = nativeA.sum(axis = 0)
-
-    val maxError = compare(result.values(), nativeResult.data)
-    assert(maxError === 0.0f)
-  }
-
-  test("matrix sum columns") {
-    val nativeA = NativeMatrix.matrix(ROWS, COLUMNS)
-    val a = Matrix.of(nativeA.data)
-
-    val result = a.sum(axis = 1)
-    result.copy2host()
-    val nativeResult = nativeA.sum(axis = 1)
-
-    val maxError = compare(result.values(), nativeResult.data)
-    assert(maxError === 0.0f)
-  }
-
-  test("matrix add row") {
-    val nativeA = NativeMatrix.matrix(ROWS, COLUMNS)
-    val nativeB = NativeVector.vector(COLUMNS)
-    val a = Matrix.of(nativeA.data)
-    val b = Vector.of(nativeB.data)
+  test("matrix + row") {
+    val aData = NativeMatrix.matrixData[Float](ROWS, COLUMNS)
+    val nativeA = new NativeMatrix(aData)
+    val bData = NativeVector.vectorData(COLUMNS)
+    val nativeB = new NativeVector(bData)
+    val a = Matrix.of(aData)
+    val b = Vector.of(bData)
 
     val result = a + b
-    result.copy2host()
     val nativeResult = nativeA + nativeB
 
     val maxError = compare(result.values(), nativeResult.data)
@@ -741,7 +719,7 @@ class TestMatrix extends FunSuite with TestUtils {
       val row2 = data2(i)
       for (j <- row2.indices) {
         val error = Math.abs(row1(j) - row2(j))
-        assert(error < 0.0001, s"$i, $j, ${a.values()(i)(j)}, ${b.values()(j)}, ${result.values()(i)(j)}, ${nativeResult.data(i)(j)}")
+        assert(error < 0.0001, s"$i, $j, ${aData(i)(j)}, ${bData(j)}, ${data1(i)(j)}, ${data2(i)(j)}")
       }
     }
 
@@ -749,14 +727,17 @@ class TestMatrix extends FunSuite with TestUtils {
     println(s"$maxError")
   }
 
-  test("matrix add column") {
+  test("matrix + row, result") {
+    testWithResultMV_M(matrix(ROWS, COLUMNS), vector(COLUMNS), _ + _, _ + (_, _))
+  }
+
+  test("matrix +| column") {
     val nativeA = NativeMatrix.matrix(ROWS, COLUMNS)
     val nativeB = NativeVector.vector(ROWS)
     val a = Matrix.of(nativeA.data)
     val b = Vector.of(nativeB.data)
 
     val result = a +| b
-    result.copy2host()
     val nativeResult = nativeA +| nativeB
 
     val maxError = compare(result.values(), nativeResult.data)
@@ -764,14 +745,17 @@ class TestMatrix extends FunSuite with TestUtils {
     println(s"$maxError")
   }
 
-  test("matrix sub row") {
+  test("matrix +| column, result") {
+    testWithResultMV_M(matrix(ROWS, COLUMNS), vector(COLUMNS), _ +| _, _ +| (_, _))
+  }
+
+  test("matrix - row") {
     val nativeA = NativeMatrix.matrix(ROWS, COLUMNS)
     val nativeB = NativeVector.vector(COLUMNS)
     val a = Matrix.of(nativeA.data)
     val b = Vector.of(nativeB.data)
 
     val result = a - b
-    result.copy2host()
     val nativeResult = nativeA - nativeB
 
     val maxError = compare(result.values(), nativeResult.data)
@@ -779,22 +763,29 @@ class TestMatrix extends FunSuite with TestUtils {
     println(s"$maxError")
   }
 
-  test("matrix sub column") {
+  test("matrix - row, result") {
+    testWithResultMV_M(matrix(ROWS, COLUMNS), vector(COLUMNS), _ - _, _ - (_, _))
+  }
+
+  test("matrix -| column") {
     val nativeA = NativeMatrix.matrix(ROWS, COLUMNS)
     val nativeB = NativeVector.vector(ROWS)
     val a = Matrix.of(nativeA.data)
     val b = Vector.of(nativeB.data)
 
     val result = a -| b
-    result.copy2host()
     val nativeResult = nativeA -| nativeB
 
     val maxError = compare(result.values(), nativeResult.data)
     assert(maxError < 0.0001)
     println(s"$maxError")
   }
+
+  test("matrix -| column, result") {
+    testWithResultMV_M(matrix(ROWS, COLUMNS), vector(COLUMNS), _ -| _, _ -| (_, _))
+  }
   
-  test("matrix columns values") {
+  test("matrix(columnsIndices)") {
     val nativeA = NativeMatrix.matrix(ROWS, COLUMNS)
     val columnsIndicesData = Array.fill(ROWS)((Math.random() * COLUMNS).toInt)
     val nativeColumnIndices = new NativeVector(columnsIndicesData.map(_.toFloat))
@@ -802,10 +793,47 @@ class TestMatrix extends FunSuite with TestUtils {
     val columnsIndices = Vector.of(columnsIndicesData)
 
     val result = a(columnsIndices)
-    result.copy2host()
     val nativeResult = nativeA(nativeColumnIndices)
 
     val maxError = compare(result.values(), nativeResult.data)
+    assert(maxError === 0)
+  }
+
+  test("matrix(columnsIndices, result)") {
+    val columnsIndicesData = Array.fill(ROWS)((Math.random() * COLUMNS).toInt)
+    testWithResultMV_V[Float, Int, Float](matrix(ROWS, COLUMNS), Vector.of(columnsIndicesData), _(_), _(_, _))
+  }
+
+  test("matrix(i) = row") {
+    val matrix = new Matrix[Float](ROWS, COLUMNS)
+    val rowData = NativeVector.vectorData(COLUMNS)
+    val row = Vector.of(rowData)
+    val i = (Math.random() * ROWS).toInt
+    matrix(i) = row
+
+    val maxError = compare(matrix.values()(i), rowData)
+    assert(maxError === 0)
+  }
+
+  test("matrix(i, j) = value") {
+    val matrix = new Matrix[Float](ROWS, COLUMNS)
+    val value = Math.random().toFloat;
+    val i = (Math.random() * ROWS).toInt
+    val j = (Math.random() * COLUMNS).toInt
+    matrix(i, j) = value
+
+    assert(matrix(i, j).value() === value)
+  }
+
+  test("matrix(columnsIndices) = values") {
+    val matrix = new Matrix[Float](ROWS, COLUMNS)
+    val columnsIndicesData = Array.fill(ROWS)((Math.random() * COLUMNS).toInt)
+    val columnsIndices = Vector.of(columnsIndicesData)
+    val valuesData = NativeVector.vectorData(ROWS)
+    val values = Vector.of(valuesData)
+    matrix(columnsIndices) = values
+
+    val maxError = compare(matrix(columnsIndices).values(), valuesData)
     assert(maxError === 0)
   }
 

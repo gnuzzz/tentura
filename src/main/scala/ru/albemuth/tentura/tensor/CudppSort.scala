@@ -4,65 +4,67 @@ import jcuda.jcudpp._
 import ru.albemuth.tentura.tensor.SortOrder.SortOrder
 import ru.albemuth.tentura.tensor.CudppOperation.{cudppConfig, cudppPlan, datatype}
 
+import scala.reflect.ClassTag
+
 /**
   * @author Vladimir Kornyshev { @literal <gnuzzz@mail.ru>}
   */
 object CudppSort {
 
-  def sort(vector: Vector[_]): SortOperation = {
+  def sort[T: ClassTag](vector: Vector[T]): SortOperation = {
     radixSort(vector)
   }
 
-  def sort(vector: Vector[_], order: SortOrder): SortOperation = {
+  def sort[T: ClassTag](vector: Vector[T], order: SortOrder): SortOperation = {
     radixSort(vector, order)
   }
 
-  def argsort(vector: Vector[_]): ArgsortOperation = {
+  def argsort[T: ClassTag](vector: Vector[T]): ArgsortOperation = {
     radixArgsort(vector)
   }
 
-  def argsort(vector: Vector[_], order: SortOrder): ArgsortOperation = {
+  def argsort[T: ClassTag](vector: Vector[T], order: SortOrder): ArgsortOperation = {
     radixArgsort(vector, order)
   }
 
-  def mergeSort(vector: Vector[_]): MergeSort = {
+  def mergeSort[T: ClassTag](vector: Vector[T]): MergeSort = {
     mergeSort(vector, SortOrder.ASC)
   }
 
-  def mergeSort(vector: Vector[_], order: SortOrder): MergeSort = {
+  def mergeSort[T: ClassTag](vector: Vector[T], order: SortOrder): MergeSort = {
     val orderOption = if (order == SortOrder.ASC) CUDPPOption.CUDPP_OPTION_FORWARD else CUDPPOption.CUDPP_OPTION_BACKWARD
     val config = cudppConfig(CUDPPAlgorithm.CUDPP_SORT_MERGE, datatype(vector), CUDPPOperator.CUDPP_MIN, CUDPPOption.CUDPP_OPTION_KEYS_ONLY | orderOption)
     val plan = cudppPlan(config, vector.length, 1, 0)
     new MergeSort(plan, vector.length)
   }
 
-  def mergeArgsort(vector: Vector[_]): MergeSort = {
+  def mergeArgsort[T: ClassTag](vector: Vector[T]): MergeSort = {
     mergeArgsort(vector, SortOrder.ASC)
   }
 
-  def mergeArgsort(vector: Vector[_], order: SortOrder): MergeSort = {
+  def mergeArgsort[T: ClassTag](vector: Vector[T], order: SortOrder): MergeSort = {
     val orderOption = if (order == SortOrder.ASC) CUDPPOption.CUDPP_OPTION_FORWARD else CUDPPOption.CUDPP_OPTION_BACKWARD
     val config = cudppConfig(CUDPPAlgorithm.CUDPP_SORT_MERGE, datatype(vector), CUDPPOperator.CUDPP_MIN, CUDPPOption.CUDPP_OPTION_KEY_VALUE_PAIRS | orderOption)
     val plan = cudppPlan(config, vector.length, 1, 0)
     new MergeSort(plan, vector.length)
   }
 
-  def radixSort(vector: Vector[_]): RadixSort = {
+  def radixSort[T: ClassTag](vector: Vector[T]): RadixSort = {
     radixSort(vector, SortOrder.ASC)
   }
 
-  def radixSort(vector: Vector[_], order: SortOrder): RadixSort = {
+  def radixSort[T: ClassTag](vector: Vector[T], order: SortOrder): RadixSort = {
     val orderOption = if (order == SortOrder.ASC) CUDPPOption.CUDPP_OPTION_FORWARD else CUDPPOption.CUDPP_OPTION_BACKWARD
     val config = cudppConfig(CUDPPAlgorithm.CUDPP_SORT_RADIX, datatype(vector), CUDPPOperator.CUDPP_MIN, CUDPPOption.CUDPP_OPTION_KEYS_ONLY | orderOption)
     val plan = cudppPlan(config, vector.length, 1, 0)
     new RadixSort(plan, vector.length)
   }
 
-  def radixArgsort(vector: Vector[_]): RadixArgsort = {
+  def radixArgsort[T: ClassTag](vector: Vector[T]): RadixArgsort = {
     radixArgsort(vector, SortOrder.ASC)
   }
 
-  def radixArgsort(vector: Vector[_], order: SortOrder): RadixArgsort = {
+  def radixArgsort[T: ClassTag](vector: Vector[T], order: SortOrder): RadixArgsort = {
     val orderOption = if (order == SortOrder.ASC) CUDPPOption.CUDPP_OPTION_FORWARD else CUDPPOption.CUDPP_OPTION_BACKWARD
     val config = cudppConfig(CUDPPAlgorithm.CUDPP_SORT_RADIX, datatype(vector), CUDPPOperator.CUDPP_MIN, CUDPPOption.CUDPP_OPTION_KEY_VALUE_PAIRS | orderOption)
     val plan = cudppPlan(config, vector.length, 1, 0)

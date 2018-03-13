@@ -237,6 +237,12 @@ object NativeVector {
     data
   }
 
+  def vectorData(length: Int, generator: => Float): Array[Float] = {
+    val data = emptyVectorData(length)
+    fillVectorData(data, generator)
+    data
+  }
+
   def emptyVectorData(length: Int): Array[Float] = {
     new Array[Float](length)
   }
@@ -245,6 +251,12 @@ object NativeVector {
     val rnd = new Random
     for (i <- data.indices) {
       data(i) = rnd.nextGaussian.toFloat * 100
+    }
+  }
+
+  def fillVectorData(data: Array[Float], generatior: => Float): Unit = {
+    for (i <- data.indices) {
+      data(i) = generatior
     }
   }
 

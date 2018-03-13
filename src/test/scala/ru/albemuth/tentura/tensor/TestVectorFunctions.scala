@@ -7,9 +7,7 @@ import ru.albemuth.tentura.tensor.kernel.vector._
 /**
   * @author Vladimir Kornyshev { @literal <gnuzzz@mail.ru>}
   */
-class TestVectorFunctions extends FunSuite with TestUtils {
-
-  val LENGTH = 513
+class TestVectorFunctions extends FunSuite with TestUtils with TestWithResult {
 
   test("bincount(vector)") {
     val data = NativeVector.vectorData(10).map(_.toInt).map(v => if (v < 0) 0 else v)
@@ -17,16 +15,19 @@ class TestVectorFunctions extends FunSuite with TestUtils {
     val a = Vector.of(data)
 
     val result = bincount(a)
-    result.copy2host()
 
     val nativeResult = NativeOperations.bincount(nativeA)
 
     val maxError = compare(result.values().map(_.toFloat), nativeResult.data)
     assert(maxError < 0.0001)
 
-//    data.foreach(i => print(i + " "))
-//    println()
-//    result.values().zipWithIndex.foreach(p => println(p._2 + ": " + p._1))
+  }
+
+  test("bincount(vector, maxValue, result)") {
+    val data = NativeVector.vectorData(COLUMNS).map(_.toInt).map(v => if (v < 0) 0 else v)
+    val vector = Vector.of(data)
+    val maxValue = vector.max().value()
+    testWithResultV_Vi[Int](vector, VectorFunctions.bincount(_, maxValue), VectorFunctions.bincount(_, maxValue, _))
   }
 
   test("sum(vector)") {
@@ -35,7 +36,6 @@ class TestVectorFunctions extends FunSuite with TestUtils {
       val a = Vector.of(data)
 
       val result = sum(a)
-      result.copy2host()
 
       val nativeResult = data.sum
       val maxError = Math.abs(result - nativeResult)/Math.abs(nativeResult)
@@ -48,13 +48,16 @@ class TestVectorFunctions extends FunSuite with TestUtils {
     check(1000000)
   }
 
+  test("sum(vector, result)") {
+    testWithResultV_S[Float, Float](vector(COLUMNS), VectorFunctions.sum(_), VectorFunctions.sum(_,  _))
+  }
+
   test("max(vector)") {
     def check(length: Int): Unit = {
       val nativeA = NativeVector.vector(length)
       val a = new Vector(nativeA.data)
 
       val result = max(a)
-      result.copy2host()
 
       val nativeResult = nativeA.max()
       assert(result.value() === nativeResult, s"length: $length")
@@ -66,13 +69,16 @@ class TestVectorFunctions extends FunSuite with TestUtils {
     check(1000000)
   }
 
+  test("max(vector, result)") {
+    testWithResultV_S[Float, Float](vector(COLUMNS), VectorFunctions.max(_), VectorFunctions.max(_,  _))
+  }
+
   test("min(vector)") {
     def check(length: Int): Unit = {
       val nativeA = NativeVector.vector(length)
       val a = new Vector(nativeA.data)
 
       val result = min(a)
-      result.copy2host()
 
       val nativeResult = nativeA.min()
       assert(result.value() === nativeResult, s"length: $length")
@@ -84,13 +90,16 @@ class TestVectorFunctions extends FunSuite with TestUtils {
     check(1000000)
   }
 
+  test("min(vector, result)") {
+    testWithResultV_S[Float, Float](vector(COLUMNS), VectorFunctions.min(_), VectorFunctions.min(_,  _))
+  }
+
   test("argmax(vector)") {
     def check(length: Int): Unit = {
       val nativeA = NativeVector.vector(length)
       val a = new Vector(nativeA.data)
 
       val result = argmax(a)
-      result.copy2host()
 
       val nativeResult = nativeA.argmax()
       assert(result.value() === nativeResult, s"length: $length")
@@ -102,13 +111,16 @@ class TestVectorFunctions extends FunSuite with TestUtils {
     check(1000000)
   }
 
+  test("argmax(vector, result)") {
+    testWithResultV_S[Float, Int](vector(COLUMNS), VectorFunctions.argmax(_), VectorFunctions.argmax(_,  _))
+  }
+
   test("argmin(vector)") {
     def check(length: Int): Unit = {
       val nativeA = NativeVector.vector(length)
       val a = new Vector(nativeA.data)
 
       val result = argmin(a)
-      result.copy2host()
 
       val nativeResult = nativeA.argmin()
       assert(result.value() === nativeResult, s"length: $length")
@@ -118,6 +130,10 @@ class TestVectorFunctions extends FunSuite with TestUtils {
       check(length)
     }
     check(1000000)
+  }
+
+  test("argmin(vector, result)") {
+    testWithResultV_S[Float, Int](vector(COLUMNS), VectorFunctions.argmin(_), VectorFunctions.argmin(_,  _))
   }
 
 }

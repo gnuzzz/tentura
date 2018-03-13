@@ -37,7 +37,7 @@ object SamplePerformance extends App {
   implicit val c = new Matrix[Float](a.columns, a.rows)
 
   val multiplyTime = standardConfig measure {
-    val result = a.t
+    val result = a.T
   }
 
   println(s"Time: $multiplyTime")

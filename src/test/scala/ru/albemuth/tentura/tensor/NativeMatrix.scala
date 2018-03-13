@@ -326,6 +326,12 @@ object NativeMatrix {
     data
   }
 
+  def matrixData[T: ClassTag](rows: Int, columns: Int, generator: => T): Array[Array[T]] = {
+    val data = emptyMatrixData[T](rows, columns)
+    fillMatrixData[T](data, generator)
+    data
+  }
+
   def emptyMatrixData[T: ClassTag](rows: Int, columns: Int): Array[Array[T]] = {
     val data = new Array[Array[T]](rows)
     for (i <- data.indices) {
@@ -340,7 +346,15 @@ object NativeMatrix {
       val row = data(i)
       for (j <- row.indices) {
         row(j) = nextRandom[T](rnd.nextGaussian())
-//        matrix(i)(j) = 0.0f
+      }
+    }
+  }
+
+  def fillMatrixData[T: ClassTag](data: Array[Array[T]], generator: => T): Unit = {
+    for (i <- data.indices) {
+      val row = data(i)
+      for (j <- row.indices) {
+        row(j) = generator
       }
     }
   }

@@ -72,7 +72,7 @@ __device__ void matrixSubScalar(const T* A, const T scalar, T* C,
 }
 
 template<typename T>
-__device__ void scalarSubMatrix(const T scalar, const T* A, T* C,
+__device__ void scalarSubMatrix(const T* A, const T scalar, T* C,
                                 const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;
@@ -186,7 +186,7 @@ __device__ void matrixDivScalar(const T* A, const T scalar, T* C,
 }
 
 template<typename T>
-__device__ void scalarDivMatrix(const T scalar, const T* A, T* C,
+__device__ void scalarDivMatrix(const T* A, const T scalar, T* C,
                                 const int numRows, const int numColumns) {
 
   int bx = blockIdx.x;

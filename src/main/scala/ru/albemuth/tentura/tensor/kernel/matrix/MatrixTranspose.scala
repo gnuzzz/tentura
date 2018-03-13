@@ -12,7 +12,7 @@ import ru.albemuth.tentura.tensor.kernel.matrix.MatrixTranspose.BLOCK_ROWS
 class MatrixTranspose(override val moduleName: String, override val classifier: String, override val functionName: String) extends MatrixKernel(moduleName, classifier, functionName) with Template[MatrixTranspose] {
 
   def this() {
-    this("ru/albemuth/tentura/tensor/kernel/Matrix", KernelRegistry.classifier(classOf[MatrixTranspose]), "matrixTranspose")
+    this("ru/albemuth/tentura/tensor/kernel/matrix/Matrix", KernelRegistry.classifier(classOf[MatrixTranspose]), "matrixTranspose")
   }
 
   override def blockSize(c: Matrix[_]): (Int, Int, Int) = (TILE_DIM, BLOCK_ROWS, 1)

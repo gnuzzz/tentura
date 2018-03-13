@@ -7,9 +7,6 @@ import org.scalatest.FunSuite
   */
 class TestCudppOperation extends FunSuite with TestUtils {
 
-  val ROWS = 512
-  val COLUMNS = 128
-
   test("sort") {
     val nativeA = NativeVector.vector(COLUMNS)
     val a = new Vector(nativeA.data)
@@ -17,7 +14,6 @@ class TestCudppOperation extends FunSuite with TestUtils {
     val sort = CudppSort.sort(a)
     val result = sort(a)
     sort.release()
-    result.copy2host()
     val nativeResult = NativeOperations.sort(nativeA)
 
     val maxError = compare(result.values(), nativeResult.data)
@@ -31,7 +27,6 @@ class TestCudppOperation extends FunSuite with TestUtils {
     val sort = CudppSort.sort(a, SortOrder.DESC)
     val result = sort(a)
     sort.release()
-    result.copy2host()
     val nativeResult = NativeOperations.sort(nativeA)
 
     val maxError = compare(result.values(), nativeResult.data.reverse)
@@ -45,7 +40,6 @@ class TestCudppOperation extends FunSuite with TestUtils {
     val sort = CudppSort.radixSort(a)
     val result = sort(a)
     sort.release()
-    result.copy2host()
     val nativeResult = NativeOperations.sort(nativeA)
 
     val maxError = compare(result.values(), nativeResult.data)
@@ -59,7 +53,6 @@ class TestCudppOperation extends FunSuite with TestUtils {
     val argsort = CudppSort.argsort(a)
     val result = argsort(a)
     argsort.release()
-    result.copy2host()
     val nativeResult = NativeOperations.argsort(nativeA)
 
     val maxError = compare(result.values().map(_.toFloat), nativeResult.data)
@@ -73,7 +66,6 @@ class TestCudppOperation extends FunSuite with TestUtils {
     val argsort = CudppSort.argsort(a, SortOrder.DESC)
     val result = argsort(a)
     argsort.release()
-    result.copy2host()
     val nativeResult = NativeOperations.argsort(nativeA)
 
     val maxError = compare(result.values().map(_.toFloat), nativeResult.data.reverse)
@@ -87,7 +79,6 @@ class TestCudppOperation extends FunSuite with TestUtils {
     val sort = CudppSort.radixArgsort(a)
     val result = sort(a)
     sort.release()
-    result.copy2host()
     val nativeResult = NativeOperations.argsort(nativeA)
 
     val maxError = compare(result.values().map(_.toFloat), nativeResult.data)
@@ -101,7 +92,6 @@ class TestCudppOperation extends FunSuite with TestUtils {
 //    val sort = CudppOperation.mergeSort(a)
 //    val result = sort(a)
 //    sort.release()
-//    result.copy2host()
 //    val nativeResult = NativeOperations.sort(nativeA)
 //
 //    val maxError = compare(result.values(), nativeResult.data)
@@ -115,7 +105,6 @@ class TestCudppOperation extends FunSuite with TestUtils {
 //    val sort = CudppOperation.mergeArgsort(a)
 //    val result = sort(a)
 //    sort.release()
-//    result.copy2host()
 //    val nativeResult = NativeOperations.argsort(nativeA)
 //
 //    val maxError = compare(result.values().map(_.toFloat), nativeResult.data)

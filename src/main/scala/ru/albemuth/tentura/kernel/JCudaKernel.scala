@@ -161,8 +161,9 @@ __global__ void ${name}_${postfix}(${formalParams(params, typeName)}) {
     }
   }
 
-  def sizeOfItem[T](data: Array[T]): Int = {
-    data.getClass.getComponentType match {
+  def sizeOf[T: ClassTag](): Int = {
+    val clazz = implicitly[ClassTag[T]].runtimeClass
+    clazz match {
       case b if b == classOf[Boolean] => Sizeof.BYTE
       case b if b == classOf[Byte] => Sizeof.BYTE
       case c if c == classOf[Char] => Sizeof.CHAR
@@ -194,9 +195,9 @@ __global__ void ${name}_${postfix}(${formalParams(params, typeName)}) {
     tTag.newArray(length)
   }
 
-  def devicePtr[T](data: Array[T]): CUdeviceptr = {
+  def devicePtr[T: ClassTag](dataLength: Int): CUdeviceptr = {
     val devicePtr = new CUdeviceptr
-    JCudaDriver.cuMemAlloc(devicePtr, data.length * sizeOfItem(data))
+    JCudaDriver.cuMemAlloc(devicePtr, dataLength * sizeOf[T]())
     devicePtr
   }
 

@@ -31,6 +31,23 @@ class TestSimple extends FunSuite {
     r.asInstanceOf[VImpl[Int]].data.foreach(println(_))
   }
 
+  test("aaa") {
+    val c1 = new C(1)
+    println(c1.plus(1).value())
+  }
+
+}
+
+class C[T: ClassTag](val v: Int) {
+
+  val data = Array(v)
+
+  def plus(scalar: Int): C[T] = {
+    new C(data(0) + scalar)
+  }
+
+  def value(): Int = data(0)
+
 }
 
 abstract class V[T, -PARAM <: V[T, _, _], +RESULT <: V[T, _, _]] {

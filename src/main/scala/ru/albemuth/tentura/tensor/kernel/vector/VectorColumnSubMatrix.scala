@@ -9,7 +9,7 @@ import ru.albemuth.tentura.tensor.kernel.matrix.MatrixKernel
 class VectorColumnSubMatrix(override val moduleName: String, override val classifier: String, override val functionName: String) extends MatrixKernel(moduleName, classifier, functionName) with Template[VectorColumnSubMatrix] {
 
   def this() {
-    this("ru/albemuth/tentura/tensor/kernel/Matrix", KernelRegistry.classifier(classOf[VectorColumnSubMatrix]), "vectorColumnSubMatrix")
+    this("ru/albemuth/tentura/tensor/kernel/matrix/Matrix", KernelRegistry.classifier(classOf[VectorColumnSubMatrix]), "vectorColumnSubMatrix")
   }
 
   def materialize(functionImplName: String): VectorColumnSubMatrix = new VectorColumnSubMatrix(moduleName, classifier, functionImplName)

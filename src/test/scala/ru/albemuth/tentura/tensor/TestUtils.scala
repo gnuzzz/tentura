@@ -5,6 +5,9 @@ package ru.albemuth.tentura.tensor
   */
 trait TestUtils {
 
+  val ROWS = 513
+  val COLUMNS = 131
+
   def printMatrix(matrix: Array[Array[Float]]): Unit = {
     for (i <- matrix.indices) {
       val row = matrix(i)
@@ -34,7 +37,7 @@ trait TestUtils {
   }
 
   def compare(data1: Array[Array[Float]], data2: Array[Array[Float]]): Double = {
-    var maxError = Double.MinValue
+    var maxError = 0.0
     for (i <- data1.indices) {
       val row1 = data1(i)
       val row2 = data2(i)
@@ -51,7 +54,7 @@ trait TestUtils {
   }
 
   def compare(data1: Array[Array[Double]], data2: Array[Array[Double]]): Double = {
-    var maxError = Double.MinValue
+    var maxError = 0.0
     for (i <- data1.indices) {
       val row1 = data1(i)
       val row2 = data2(i)
@@ -68,7 +71,7 @@ trait TestUtils {
   }
 
   def compare(data1: Array[Array[Int]], data2: Array[Array[Int]]): Double = {
-    var maxError = Double.MinValue
+    var maxError = 0.0
     for (i <- data1.indices) {
       val row1 = data1(i)
       val row2 = data2(i)
@@ -85,7 +88,7 @@ trait TestUtils {
   }
 
   def compare(data1: Array[Array[Long]], data2: Array[Array[Long]]): Double = {
-    var maxError = Double.MinValue
+    var maxError = 0.0
     for (i <- data1.indices) {
       val row1 = data1(i)
       val row2 = data2(i)
@@ -102,7 +105,7 @@ trait TestUtils {
   }
 
   def compare(data1: Array[Array[Boolean]], data2: Array[Array[Boolean]]): Double = {
-    var maxError = Double.MinValue
+    var maxError = 0.0
     for (i <- data1.indices) {
       val row1 = data1(i)
       val row2 = data2(i)
@@ -115,7 +118,7 @@ trait TestUtils {
   }
 
   def compare(data1: Array[Array[Char]], data2: Array[Array[Char]]): Double = {
-    var maxError = Double.MinValue
+    var maxError = 0.0
     for (i <- data1.indices) {
       val row1 = data1(i)
       val row2 = data2(i)
@@ -128,7 +131,7 @@ trait TestUtils {
   }
 
   def compare(data1: Array[Int], data2: Array[Int]): Double = {
-    var maxError = Double.MinValue
+    var maxError = 0.0
     for (i <- data1.indices) {
       val error = if (data1(i) == 0 || data2(i) == 0) {
         Math.abs(data1(i) - data2(i))
@@ -141,7 +144,7 @@ trait TestUtils {
   }
 
   def compare(data1: Array[Long], data2: Array[Long]): Double = {
-    var maxError = Double.MinValue
+    var maxError = 0.0
     for (i <- data1.indices) {
       val error = if (data1(i) == 0 || data2(i) == 0) {
         Math.abs(data1(i) - data2(i))
@@ -154,7 +157,7 @@ trait TestUtils {
   }
 
   def compare(data1: Array[Boolean], data2: Array[Boolean]): Double = {
-    var maxError = 0
+    var maxError = 0.0
     for (i <- data1.indices) {
       val error = if (data1(i) == data2(i)) 0 else 1
       if (error > maxError) maxError = error
@@ -163,7 +166,7 @@ trait TestUtils {
   }
 
   def compare(data1: Array[Char], data2: Array[Char]): Double = {
-    var maxError = 0
+    var maxError = 0.0
     for (i <- data1.indices) {
       val error = if (data1(i) == data2(i)) 0 else 1
       if (error > maxError) maxError = error
@@ -172,7 +175,7 @@ trait TestUtils {
   }
 
   def compare(data1: Array[Float], data2: Array[Float]): Double = {
-    var maxError = Double.MinValue
+    var maxError = 0.0
     for (i <- data1.indices) {
       val error = if (data1(i) == 0 || data2(i) == 0) {
         Math.abs(data1(i) - data2(i))
@@ -185,7 +188,7 @@ trait TestUtils {
   }
 
   def compare(data1: Array[Double], data2: Array[Double]): Double = {
-    var maxError = Double.MinValue
+    var maxError = 0.0
     for (i <- data1.indices) {
       val error = if (data1(i) == 0 || data2(i) == 0) {
         Math.abs(data1(i) - data2(i))

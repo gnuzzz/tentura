@@ -8,7 +8,7 @@ import ru.albemuth.tentura.kernel.{KernelRegistry, Template}
 class MatrixSubRow(override val moduleName: String, override val classifier: String, override val functionName: String) extends MatrixKernel(moduleName, classifier, functionName) with Template[MatrixSubRow] {
 
   def this() {
-    this("ru/albemuth/tentura/tensor/kernel/Matrix", KernelRegistry.classifier(classOf[MatrixSubRow]), "matrixSubRow")
+    this("ru/albemuth/tentura/tensor/kernel/matrix/Matrix", KernelRegistry.classifier(classOf[MatrixSubRow]), "matrixSubRow")
   }
 
   def materialize(functionImplName: String): MatrixSubRow = new MatrixSubRow(moduleName, classifier, functionImplName)

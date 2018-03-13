@@ -15,7 +15,7 @@ class TransposePerformance {
 
 object MatrixCopy extends App with MatrixPerformance {
   //matrix copy time: 0.46422063999999996 ms
-  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/MatrixTranspose", "", "copy")
+  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/matrix/MatrixTranspose", "", "copy")
   val width = 5073
   val tileDim = 64
   val blockRows = 4
@@ -46,7 +46,7 @@ object MatrixCopy extends App with MatrixPerformance {
 
 object MatrixTransposeNaive extends App with MatrixPerformance {
   //matrix transposeNaive time: 1.6034827600000006 ms
-  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/MatrixTranspose", "", "transposeNaive")
+  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/matrix/MatrixTranspose", "", "transposeNaive")
   val width = 1024
   val tileDim = 32
   val blockRows = 8
@@ -77,7 +77,7 @@ object MatrixTransposeNaive extends App with MatrixPerformance {
 
 object MatrixTransposeCoalesced extends App with MatrixPerformance {
   //matrix transposeCoalesced time: 0.8344074 ms
-  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/MatrixTranspose", "", "transposeCoalesced")
+  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/matrix/MatrixTranspose", "", "transposeCoalesced")
   val width = 1024
   val tileDim = 32
   val blockRows = 8
@@ -108,7 +108,7 @@ object MatrixTransposeCoalesced extends App with MatrixPerformance {
 
 object MatrixCopySharedMem extends App with MatrixPerformance {
   //matrix copySharedMem time: 0.39840684 ms
-  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/MatrixTranspose", "", "copySharedMem")
+  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/matrix/MatrixTranspose", "", "copySharedMem")
   val width = 1024
   val tileDim = 32
   val blockRows = 8
@@ -139,7 +139,7 @@ object MatrixCopySharedMem extends App with MatrixPerformance {
 
 object MatrixTransposeNoBankConflicts extends App with MatrixPerformance {
   //matrix transposeNoBankConflicts time: 0.42154356 ms
-  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/MatrixTranspose", "", "transposeNoBankConflicts")
+  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/matrix/MatrixTranspose", "", "transposeNoBankConflicts")
   val width = 1024
   val tileDim = 32
   val blockRows = 8
@@ -171,7 +171,7 @@ object MatrixTransposeNoBankConflicts extends App with MatrixPerformance {
 object MatrixTranspose extends App with MatrixPerformance {
   //matrix transpose time: 0.4132885600000001 ms
   //matrix transpose time: 0.4422022800000001 ms
-  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/MatrixTranspose", "", "transpose")
+  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/matrix/MatrixTranspose", "", "transpose")
   val width = 1024
   val tileDim = 32
   val blockRows = 8
@@ -204,7 +204,7 @@ object MatrixTranspose extends App with MatrixPerformance {
 
 object MatrixTransposeDouble extends App with MatrixPerformance {
   //matrix transposeDouble time: 0.7591186799999999 ms
-  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/MatrixTranspose", "", "transposeDouble")
+  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/matrix/MatrixTranspose", "", "transposeDouble")
   val width = 1024
   val tileDim = 32
   val blockRows = 8
@@ -236,8 +236,8 @@ object MatrixTransposeDouble extends App with MatrixPerformance {
 object MatrixTransposeTemplate extends App with MatrixPerformance {
   //matrix transposeTemplateFloat time: 0.404422 ms
   //matrix transposeTemplateDouble time: 0.7437388399999999 ms
-  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/MatrixTranspose", "", "transposeTemplateFloat")
-  //val kernel = JCudaKernel.loadKernel("/ru/albemuth/tentura/tensor/kernel/MatrixTranspose.cu", "transposeTemplateDouble")
+  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/matrix/MatrixTranspose", "", "transposeTemplateFloat")
+  //val kernel = JCudaKernel.loadKernel("/ru/albemuth/tentura/tensor/kernel/matrix/MatrixTranspose.cu", "transposeTemplateDouble")
   val width = 1024
   val tileDim = 32
   val blockRows = 8
@@ -278,7 +278,7 @@ object MatrixTransposeExperimental extends App with MatrixPerformance with TestU
   //matrix transposeExperimental time: 3.1973792799999994 ms  //32, 4
   //matrix transposeExperimental time: 2.70111596 ms          //64, 8
   //matrix transposeExperimental time: 2.682935 ms            //64, 4
-  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/MatrixTranspose", "", "transposeExperimental")
+  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/matrix/MatrixTranspose", "", "transposeExperimental")
   val width = 5073
 //  val width = 2
   val tileDim = 64

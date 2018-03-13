@@ -8,13 +8,13 @@ import ru.albemuth.tentura.tensor.kernel.vector.VectorKernel.TILE_DIM
 /**
   * @author Vladimir Kornyshev { @literal <gnuzzz@mail.ru>}
   */
-class MatrixColumnsValues(override val moduleName: String, override val classifier: String, override val functionName: String) extends VectorKernel(moduleName, classifier, functionName) with Template[MatrixColumnsValues] {
+class SetColumnsValues(override val moduleName: String, override val classifier: String, override val functionName: String) extends VectorKernel(moduleName, classifier, functionName) with Template[SetColumnsValues] {
 
   def this() {
-    this("ru/albemuth/tentura/tensor/kernel/MatrixColumnsValues", KernelRegistry.classifier(classOf[MatrixColumnsValues]), "matrixColumnsValues")
+    this("ru/albemuth/tentura/tensor/kernel/matrix/MatrixColumnsValues", KernelRegistry.classifier(classOf[SetColumnsValues]), "setMatrixColumnsValues")
   }
 
-  def materialize(functionImplName: String): MatrixColumnsValues = new MatrixColumnsValues(moduleName, classifier, functionImplName)
+  def materialize(functionImplName: String): SetColumnsValues = new SetColumnsValues(moduleName, classifier, functionImplName)
 
   override def blockSize(c: Vector[_]): (Int, Int, Int) = (1, TILE_DIM, 1)
 

@@ -53,7 +53,7 @@ __device__ void vectorSubScalar(const T* A, const T scalar, T* C, const int leng
 }
 
 template<typename T>
-__device__ void scalarSubVector(const T scalar, const T* A, T* C, const int length) {
+__device__ void scalarSubVector(const T* A, const T scalar, T* C, const int length) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -79,7 +79,7 @@ __device__ void vectorMulScalar(const T* A, const T scalar, T* C, const int leng
 }
 
 template<typename T>
-__device__ void vectorMulVector(const T* A, const T* B, T* result, const int length) {
+__device__ void vectorTimesVector(const T* A, const T* B, T* result, const int length) {
   __shared__ T a_tile[TILE_DIM];
   __shared__ T b_tile[TILE_DIM];
 
@@ -160,55 +160,6 @@ __device__ void matrixMulVector(const T* matrix, const T* vector, T* result,
 }
 
 template<typename T>
-__device__ void vectorMulMatrix(const T* vector, const T* matrix, T* result,
-                                const int matrixRows, const int matrixColumns) {
-
-  __shared__ T vector_tile[TILE_DIM];
-  __shared__ T matrix_tile[TILE_DIM][TILE_DIM];
-
-  int bx = blockIdx.x;
-  int tx = threadIdx.x;
-
-  int index = bx * blockDim.x + tx;
-  T resultValue = 0;
-
-  for (int t = 0; t < (matrixRows - 1) / TILE_DIM + 1; t++) {
-    int idx = t * TILE_DIM + tx;
-    if (idx < matrixRows) {
-      vector_tile[tx] = vector[idx];
-    } else {
-      vector_tile[tx] = 0;
-    }
-    if (index < matrixColumns) {
-      int firstTileRow = t * TILE_DIM;
-      for (int i = 0; i < TILE_DIM; i++) {
-        int row = firstTileRow + i;
-        if (row < matrixRows) {
-          matrix_tile[i][tx] = matrix[row * matrixColumns + index];
-        } else {
-          matrix_tile[i][tx] = 0;
-        }
-      }
-    } else {
-      for (int i = 0; i < TILE_DIM; i++) {
-        matrix_tile[i][tx] = 0;
-      }
-    }
-    __syncthreads();
-
-    for (int i = 0; i < TILE_DIM; i++) {
-      resultValue += vector_tile[i] * matrix_tile[i][tx];
-    }
-    __syncthreads();
-  }
-
-  if (index < matrixColumns) {
-    result[index] = resultValue;
-  }
-
-}
-
-template<typename T>
 __device__ void vectorMatrixMulVector(const T* vectorA, const T* vectorB, T* resultMatrix,
                                       const int lengthA, const int lengthB) {
   __shared__ T vectorA_tile[TILE_DIM];
@@ -264,7 +215,7 @@ __device__ void vectorDivScalar(const T* A, const T scalar, T* C, const int leng
 }
 
 template<typename T>
-__device__ void scalarDivVector(const T scalar, const T* A, T* C, const int length) {
+__device__ void scalarDivVector(const T* A, const T scalar, T* C, const int length) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
@@ -309,6 +260,19 @@ __device__ void vectorSum(const T* vector, T* result, const int length) {
 template<typename T>
 __device__ void value(const T* vector, const int index, T* result, const int length) {
   result[0] = vector[index];
+}
+
+template<typename T>
+__device__ void values(const T* vector, const int* indices, T* result, const int length, const int indicesLength) {
+
+  int bx = blockIdx.x;
+  int tx = threadIdx.x;
+
+  int index = bx * blockDim.x + tx;
+
+  if (index < indicesLength) {
+    result[index] = vector[indices[index]];
+  }
 }
 
 template<typename T>

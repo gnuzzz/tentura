@@ -5,15 +5,15 @@ import jcuda.driver.{CUdeviceptr, JCudaDriver}
 import org.scalameter.{Key, MeasureBuilder, Warmer, config}
 import ru.albemuth.tentura.kernel.JCudaKernel
 import ru.albemuth.tentura.tensor.kernel.matrix.MatrixKernel
-import ru.albemuth.tentura.tensor.{Matrix, NativeMatrix, NativeVector}
+import ru.albemuth.tentura.tensor.{Matrix, NativeMatrix, NativeVector, TestUtils}
 
 /**
   * @author Vladimir Kornyshev { @literal <gnuzzz@mail.ru>}
   */
 trait MatrixPerformance {
 
-  val ROWS = 5120
-  val COLUMNS = 1280
+//  val ROWS = 5120
+//  val COLUMNS = 1280
 
   val standardConfig: MeasureBuilder[Unit, Double] = config(
     Key.exec.minWarmupRuns -> 20,
@@ -25,7 +25,7 @@ trait MatrixPerformance {
 }
 
 //-Djava.library.path=D:/Vovan/lang/albemuth/tentura/lib -Xms1024m -Xmx1024m
-object MatrixMulMatrix extends App with MatrixPerformance {
+object MatrixMulMatrix extends App with MatrixPerformance with TestUtils {
   //val ROWS = 512
   //val COLUMNS = 128
   //base: matrix * matrix time: 4.995856679999999 ms
@@ -47,7 +47,7 @@ object MatrixMulMatrix extends App with MatrixPerformance {
   println(s"native matrix * native matrix time: $multiplyTime")
 }
 
-object NativeMatrixMulNativeMatrix extends App with MatrixPerformance {
+object NativeMatrixMulNativeMatrix extends App with MatrixPerformance with TestUtils {
   //val ROWS = 512
   //val COLUMNS = 128
   //native matrix * matrix time: 366.2258579199999 ms
@@ -72,11 +72,11 @@ object NativeMatrixMulNativeMatrix extends App with MatrixPerformance {
   println(s"native matrix * matrix time: $multiplyTime")
 }
 
-object RawMatrixMulMatrix extends App with MatrixPerformance {
+object RawMatrixMulMatrix extends App with MatrixPerformance with TestUtils {
   //val ROWS = 5120
   //val COLUMNS = 1280
   //raw matrix * matrix time: 1923.3336968400001 ms
-  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/Matrix", "", "matrixMulMatrix")
+  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/matrix/Matrix", "", "matrixMulMatrix")
   val aData = NativeVector.vectorData(ROWS * COLUMNS)
   val bData = NativeVector.vectorData(COLUMNS * ROWS)
   val resultData = NativeVector.vectorData(ROWS * ROWS)
@@ -117,14 +117,14 @@ object RawMatrixMulMatrix extends App with MatrixPerformance {
   println(s"raw matrix * matrix time: $multiplyTime")
 }
 
-object MatrixTranspose extends App with MatrixPerformance {
+object MatrixTranspose extends App with MatrixPerformance with TestUtils {
   //base: matrix transpose time: 5.22756384 ms
   //tiled: matrix transpose time: 4.736962640000002 ms
   //tiled: matrix transpose time: 0.9630467999999998 ms
   val a = Matrix.of(NativeMatrix.matrixData[Float](ROWS, COLUMNS))
 
   val multiplyTime = standardConfig measure {
-    val result = a.t
+    val result = a.T
   }
 
   println(s"matrix transpose time: $multiplyTime")
