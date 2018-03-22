@@ -9,7 +9,7 @@ import ru.albemuth.tentura.tensor.kernel.vector.VectorKernel
 class MatrixRow(override val moduleName: String, override val classifier: String, override val functionName: String) extends VectorKernel(moduleName, classifier, functionName) with Template[MatrixRow] {
 
   def this() {
-    this("ru/albemuth/tentura/tensor/kernel/Matrix", KernelRegistry.classifier(classOf[MatrixRow]), "matrixRow")
+    this("ru/albemuth/tentura/tensor/kernel/matrix/Matrix", KernelRegistry.classifier(classOf[MatrixRow]), "matrixRow")
   }
 
   def materialize(functionImplName: String): MatrixRow = new MatrixRow(moduleName, classifier, functionImplName)

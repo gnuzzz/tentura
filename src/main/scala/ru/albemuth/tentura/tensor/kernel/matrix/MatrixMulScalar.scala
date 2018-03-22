@@ -8,7 +8,7 @@ import ru.albemuth.tentura.kernel.{KernelRegistry, Template}
 class MatrixMulScalar(override val moduleName: String, override val classifier: String, override val functionName: String) extends MatrixKernel(moduleName, classifier, functionName) with Template[MatrixMulScalar] {
 
   def this() {
-    this("ru/albemuth/tentura/tensor/kernel/Matrix", KernelRegistry.classifier(classOf[MatrixMulScalar]), "matrixMulScalar")
+    this("ru/albemuth/tentura/tensor/kernel/matrix/Matrix", KernelRegistry.classifier(classOf[MatrixMulScalar]), "matrixMulScalar")
   }
 
   def materialize(functionImplName: String): MatrixMulScalar = new MatrixMulScalar(moduleName, classifier, functionImplName)

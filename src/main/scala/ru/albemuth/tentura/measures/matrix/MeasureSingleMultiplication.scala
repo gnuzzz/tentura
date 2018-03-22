@@ -16,7 +16,7 @@ object MeasureSingleMultiplication extends App with MatrixUtils {
   val result = a * b
   val t2 = System.nanoTime()
 
-  result.copy2host()
+  val data = result.values()
 
   println(s"Time: ${t2 - t1}")
 

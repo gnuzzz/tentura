@@ -2,6 +2,8 @@ package ru.albemuth.tentura.tensor
 
 import jcuda.jcudpp._
 
+import scala.reflect.ClassTag
+
 /**
   * @author Vladimir Kornyshev { @literal <gnuzzz@mail.ru>}
   */
@@ -36,8 +38,8 @@ object CudppOperation {
     plan
   }
 
-  def datatype(vector: Vector[_]): Int = {
-    vector.data.getClass.getComponentType match {
+  def datatype[T: ClassTag](vector: Vector[T]): Int = {
+    implicitly[ClassTag[T]].runtimeClass match {
       case b if b == classOf[Boolean] => CUDPPDatatype.CUDPP_DATATYPE_INVALID
       case b if b == classOf[Byte] => CUDPPDatatype.CUDPP_CHAR
       case c if c == classOf[Char] => CUDPPDatatype.CUDPP_SHORT

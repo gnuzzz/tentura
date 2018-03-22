@@ -34,7 +34,7 @@ object MatrixAddMatrixExp extends App with MatrixPerformance {
   val tileDim = 32
   val blockRows = 8
 
-  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/MatrixPerformance", "", "matrixAddMatrix")
+  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/matrix/MatrixPerformance", "", "matrixAddMatrix")
   val a = Matrix.of(NativeMatrix.matrixData[Float](rows, columns))
   val b = Matrix.of(NativeMatrix.matrixData[Float](rows, columns))
   val result = new Matrix[Float](rows, columns)
@@ -87,7 +87,7 @@ object MatrixAddScalarExp extends App with MatrixPerformance {
   val tileDim = 32
   val blockRows = 16
 
-  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/MatrixPerformance", "", "matrixAddScalar")
+  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/matrix/MatrixPerformance", "", "matrixAddScalar")
   val a = Matrix.of(NativeMatrix.matrixData[Float](rows, columns))
   val b = 11.2f
   val result = new Matrix[Float](rows, columns)
@@ -139,7 +139,7 @@ object MatrixSigmoidExp extends App with MatrixPerformance {
   val tileDim = 32
   val blockRows = 4
 
-  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/MatrixPerformance", "", "matrixSigmoid")
+  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/matrix/MatrixPerformance", "", "matrixSigmoid")
   val a = Matrix.of(NativeMatrix.matrixData[Float](rows, columns))
   val b = 11.2f
   val result = new Matrix[Float](rows, columns)
@@ -200,8 +200,8 @@ object MatrixMulMatrixExp extends App with MatrixPerformance with TestUtils with
   val tileDim = 64
   val blockRows = 4
 
-  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/MatrixPerformance", "", "matrixMulMatrix")
-//  val kernel = JCudaKernel.loadKernel("/ru/albemuth/tentura/tensor/kernel/Matrix.cu", "matrixMulMatrix")
+  val kernel = JCudaKernel.loadKernel("ru/albemuth/tentura/tensor/kernel/matrix/MatrixPerformance", "", "matrixMulMatrix")
+//  val kernel = JCudaKernel.loadKernel("/ru/albemuth/tentura/tensor/kernel/matrix/Matrix.cu", "matrixMulMatrix")
   val a = Matrix.of(NativeMatrix.matrixData[Float](rows, columns))
   val b = Matrix.of(NativeMatrix.matrixData[Float](columns, rows))
   val result = new Matrix[Float](rows, rows)

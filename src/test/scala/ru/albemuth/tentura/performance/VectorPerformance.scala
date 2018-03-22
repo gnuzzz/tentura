@@ -72,7 +72,7 @@ object VectorMatrixMulVector extends App with VectorPerformance {
   val b = new Vector[Float](NativeVector.vectorData(ROWS))
 
   val multiplyTime = standardConfig measure {
-    val result = a ** b
+    val result = a |* b
   }
 
   println(s"vector ** vector time: $multiplyTime")

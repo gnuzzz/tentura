@@ -5,7 +5,7 @@ import jcuda.driver.JCudaDriver
 import jcuda.jcudpp._
 import jcuda.runtime.{JCuda, cudaMemcpyKind}
 import ru.albemuth.tentura.kernel.JCudaKernel
-import ru.albemuth.tentura.kernel.JCudaKernel.sizeOfItem
+import ru.albemuth.tentura.kernel.JCudaKernel.sizeOf
 
 
 /**
@@ -24,10 +24,10 @@ object TestSort extends App {
   val dataPointer = JCudaKernel.pointer(data)
 
   // Allocate memory on the device
-  val deviceDataPtr = JCudaKernel.devicePtr(data)
+  val deviceDataPtr = JCudaKernel.devicePtr(data.length)
 
   // Copy the input array from the host to the device
-  JCudaDriver.cuMemcpyHtoD(deviceDataPtr, dataPointer, data.length * sizeOfItem(data))
+  JCudaDriver.cuMemcpyHtoD(deviceDataPtr, dataPointer, data.length * sizeOf[Int]())
 
   // Create a CUDPPConfiguration for a radix sort of an array
   val config = new CUDPPConfiguration
@@ -53,7 +53,7 @@ object TestSort extends App {
 //  util.Arrays.fill(array, 0)
 
   // Copy the result from the device to the host
-  JCudaDriver.cuMemcpyDtoH(dataPointer, deviceDataPtr, data.length * sizeOfItem(data))
+  JCudaDriver.cuMemcpyDtoH(dataPointer, deviceDataPtr, data.length * sizeOf[Int]())
   JCuda.cudaMemcpy(Pointer.to(data), deviceDataPtr, n * Sizeof.INT, cudaMemcpyKind.cudaMemcpyDeviceToHost)
 
   // Clean up
