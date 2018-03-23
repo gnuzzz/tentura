@@ -631,7 +631,7 @@ class TestMatrix extends FunSuite with TestUtils with TestWithResult {
   }
 
   test("matrix ^ pow") {
-    val nativeA = NativeMatrix.matrix(ROWS, COLUMNS)
+    val nativeA = NativeMatrix.matrix(5001, 3071)
     val a = Matrix.of(nativeA.data)
 
     val result1 = a ^ 0.5f
