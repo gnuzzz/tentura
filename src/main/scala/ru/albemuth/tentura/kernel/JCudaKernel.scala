@@ -79,7 +79,7 @@ object JCudaKernel {
 
     processTemplates(cuFile.getPath, processedCuFile.getPath)
     val modelString = "-m" + System.getProperty("sun.arch.data.model")
-    val command = "nvcc " + modelString + " -ptx " + processedCuFile.getPath + " -o " + ptxFile.getPath
+    val command = "nvcc " + modelString + " -ptx " + processedCuFile.getPath + " -arch=sm_35 -o " + ptxFile.getPath
 
     val process = Runtime.getRuntime.exec(command)
 
