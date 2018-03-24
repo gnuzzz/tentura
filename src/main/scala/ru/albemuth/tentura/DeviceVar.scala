@@ -15,15 +15,15 @@ abstract class DeviceVar[T: ClassTag] {
   protected val resultsCache = new ResultsCache
 
   def result[R: ClassTag](function: AnyRef, resultKey: Any, result: => Matrix[R]): Matrix[R] = {
-    resultsCache.result[R, Matrix[R]](function, resultKey, result)
+    resultsCache.result[Matrix[R]](function, resultKey, result)
   }
 
   def result[R: ClassTag](function: AnyRef, resultKey: Any, result: => Vector[R]): Vector[R] = {
-    resultsCache.result[R, Vector[R]](function, resultKey, result)
+    resultsCache.result[Vector[R]](function, resultKey, result)
   }
 
   def result[R: ClassTag](function: AnyRef, resultKey: Any, result: => Scalar[R]): Scalar[R] = {
-    resultsCache.result[R, Scalar[R]](function, resultKey, result)
+    resultsCache.result[Scalar[R]](function, resultKey, result)
   }
 
   def copy2device(data: Array[T]): Unit = {
