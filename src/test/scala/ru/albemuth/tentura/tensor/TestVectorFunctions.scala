@@ -30,6 +30,14 @@ class TestVectorFunctions extends FunSuite with TestUtils with TestWithResult {
     testWithResultV_Vi[Int](vector, VectorFunctions.bincount(_, maxValue), VectorFunctions.bincount(_, maxValue, _))
   }
 
+  test("bincount loop") {
+    val list = for (i <- 0 until 1000) yield {
+      val closestY = Vector.of(Array(i))
+      VectorFunctions.bincount(closestY)
+    }
+    assert(list.size === 1000)
+  }
+
   test("sum(vector)") {
     def check(length: Int): Unit = {
       val data = NativeVector.vectorData(length)
