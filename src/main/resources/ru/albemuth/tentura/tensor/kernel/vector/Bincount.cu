@@ -24,10 +24,13 @@ __global__ void bincount(const int* vector, int* result, const int length) {
   }
 
   //fill result vector
-  for (HashMap<int, int, IntHash>::EntriesIterator* it = map->entriesIterator(); it->hasNext(); ) {
+  HashMap<int, int, IntHash>::EntriesIterator* it = map->entriesIterator();
+  for (; it->hasNext(); ) {
     Entry<int, int>* entry = it->next();
     atomicAdd(result + entry->key(), entry->value());
   }
+  delete it;
+  delete map;
 
 }
 

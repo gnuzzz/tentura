@@ -2,7 +2,7 @@ organization := "ru.albemuth.tentura"
 
 name := "tentura"
 
-version := "0.0.5"
+version := "0.0.6"
 
 scalaVersion := "2.12.4"
 
