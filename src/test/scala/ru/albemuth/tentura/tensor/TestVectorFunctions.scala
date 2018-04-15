@@ -38,6 +38,15 @@ class TestVectorFunctions extends FunSuite with TestUtils with TestWithResult {
     assert(list.size === 1000)
   }
 
+  test("multy bincount") {
+    val vector = Vector.of(Array(0, 1, 2, 3, 4))
+    val result = VectorFunctions.bincount(vector)
+    assert(compare(result.values(), Array(1, 1, 1, 1, 1)) === 0)
+    vector.copy2device(Array(0, 0, 0, 3, 4))
+    VectorFunctions.bincount(vector)
+    assert(compare(result.values(), Array(3, 0, 0, 1, 1)) === 0)
+  }
+
   test("sum(vector)") {
     def check(length: Int): Unit = {
       val data = NativeVector.vectorData(length)

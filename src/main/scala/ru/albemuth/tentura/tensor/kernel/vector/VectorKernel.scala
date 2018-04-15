@@ -51,7 +51,7 @@ object VectorKernel {
 
   def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, vector: Vector[T], r: => Vector[R]): Vector[R] = {
     val result = vector.result(kernel, Unit, r)
-    VectorKernel.vector_r(kernel, vector, r)
+    VectorKernel.vector_r(kernel, vector, result)
   }
 
   def vector_r[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], vector: Vector[T], result: Vector[R]): Vector[R] = {
@@ -291,7 +291,7 @@ object VectorKernel {
 
   def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Boolean, r: => Vector[R]): Vector[R] = {
     val result = matrix.result(kernel, scalar, r)
-    VectorKernel.vector_r(kernel, matrix, scalar, r)
+    VectorKernel.vector_r(kernel, matrix, scalar, result)
   }
 
   def vector_r[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Byte, result: Vector[R]): Vector[R] = {
@@ -307,7 +307,7 @@ object VectorKernel {
 
   def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Byte, r: => Vector[R]): Vector[R] = {
     val result = matrix.result(kernel, scalar, r)
-    VectorKernel.vector_r(kernel, matrix, scalar, r)
+    VectorKernel.vector_r(kernel, matrix, scalar, result)
   }
 
   def vector_r[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Char, result: Vector[R]): Vector[R] = {
@@ -323,7 +323,7 @@ object VectorKernel {
 
   def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Char, r: => Vector[R]): Vector[R] = {
     val result = matrix.result(kernel, scalar, r)
-    VectorKernel.vector_r(kernel, matrix, scalar, r)
+    VectorKernel.vector_r(kernel, matrix, scalar, result)
   }
 
   def vector_r[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Short, result: Vector[R]): Vector[R] = {
@@ -339,7 +339,7 @@ object VectorKernel {
 
   def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Short, r: => Vector[R]): Vector[R] = {
     val result = matrix.result(kernel, scalar, r)
-    VectorKernel.vector_r(kernel, matrix, scalar, r)
+    VectorKernel.vector_r(kernel, matrix, scalar, result)
   }
 
   def vector_r[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Int, result: Vector[R]): Vector[R] = {
@@ -355,7 +355,7 @@ object VectorKernel {
 
   def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Int, r: => Vector[R]): Vector[R] = {
     val result = matrix.result(kernel, scalar, r)
-    VectorKernel.vector_r(kernel, matrix, scalar, r)
+    VectorKernel.vector_r(kernel, matrix, scalar, result)
   }
 
   def vector_r[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Long, result: Vector[R]): Vector[R] = {
@@ -371,7 +371,7 @@ object VectorKernel {
 
   def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Long, r: => Vector[R]): Vector[R] = {
     val result = matrix.result(kernel, scalar, r)
-    VectorKernel.vector_r(kernel, matrix, scalar, r)
+    VectorKernel.vector_r(kernel, matrix, scalar, result)
   }
 
   def vector_r[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Float, result: Vector[R]): Vector[R] = {
@@ -387,7 +387,7 @@ object VectorKernel {
 
   def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Float, r: => Vector[R]): Vector[R] = {
     val result = matrix.result(kernel, scalar, r)
-    VectorKernel.vector_r(kernel, matrix, scalar, r)
+    VectorKernel.vector_r(kernel, matrix, scalar, result)
   }
 
   def vector_r[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Double, result: Vector[R]): Vector[R] = {
@@ -403,7 +403,7 @@ object VectorKernel {
 
   def vector[T: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T], scalar: Double, r: => Vector[R]): Vector[R] = {
     val result = matrix.result(kernel, scalar, r)
-    VectorKernel.vector_r(kernel, matrix, scalar, r)
+    VectorKernel.vector_r(kernel, matrix, scalar, result)
   }
 
   def vector_r[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T], scalar: Boolean, result: Vector[R]): Vector[R] = {
@@ -747,7 +747,7 @@ object VectorKernel {
 
   def vector[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T1], vector: Vector[T2], r: => Vector[R]): Vector[R] = {
     val result = matrix.result(kernel, vector, r)
-    VectorKernel.vector_r(kernel, matrix, vector, r)
+    VectorKernel.vector_r(kernel, matrix, vector, result)
   }
 
   def vector_r[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T1], vector: Vector[T2], result: Vector[R]): Vector[R] = {

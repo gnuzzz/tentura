@@ -27,11 +27,11 @@ class Vector[T: ClassTag](override val deviceDataPtr: CUdeviceptr, val length: I
   }
 
   def apply(i: Int): Scalar[T] = {
-    new Scalar(deviceDataPtr.withByteOffset(i * sizeOf()))
+    result("apply", i, new Scalar(deviceDataPtr.withByteOffset(i * sizeOf())))
   }
 
   def apply(from: Int, to: Int): Vector[T] = {
-    new Vector(deviceDataPtr.withByteOffset(from * sizeOf()), to - from)
+    result("apply", (from, to), new Vector(deviceDataPtr.withByteOffset(from * sizeOf()), to - from))
   }
 
   def update(i: Int, value: T): Unit = {
