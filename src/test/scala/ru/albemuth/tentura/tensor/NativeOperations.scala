@@ -9,6 +9,10 @@ object NativeOperations {
     NativeVector(vector.data.sorted)
   }
 
+  def sort(matrix: NativeMatrix): NativeMatrix = {
+    NativeMatrix(matrix.data.map(_.sorted))
+  }
+
   def argsort(vector: NativeVector): NativeVector = {
     NativeVector(vector.data.zipWithIndex.sortBy(_._1).map(_._2.toFloat))
   }

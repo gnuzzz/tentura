@@ -7,7 +7,7 @@ import org.scalatest.FunSuite
   */
 class TestCudppOperation extends FunSuite with TestUtils {
 
-  test("sort") {
+  test("sort(vector)") {
     val nativeA = NativeVector.vector(COLUMNS)
     val a = new Vector(nativeA.data)
 
@@ -33,7 +33,7 @@ class TestCudppOperation extends FunSuite with TestUtils {
     assert(maxError === 0)
   }
 
-  test("radixSort") {
+  test("radixSort(vector)") {
     val nativeA = NativeVector.vector(COLUMNS)
     val a = new Vector(nativeA.data)
 
@@ -46,7 +46,7 @@ class TestCudppOperation extends FunSuite with TestUtils {
     assert(maxError === 0)
   }
 
-  test("argsort") {
+  test("argsort(vector)") {
     val nativeA = NativeVector.vector(COLUMNS)
     val a = new Vector(nativeA.data)
 
@@ -59,7 +59,7 @@ class TestCudppOperation extends FunSuite with TestUtils {
     assert(maxError === 0)
   }
 
-  test("argsort desc") {
+  test("argsort(vector, desc)") {
     val nativeA = NativeVector.vector(COLUMNS)
     val a = new Vector(nativeA.data)
 
@@ -72,7 +72,7 @@ class TestCudppOperation extends FunSuite with TestUtils {
     assert(maxError === 0)
   }
 
-  test("radixArgSort") {
+  test("radixArgSort(vector)") {
     val nativeA = NativeVector.vector(COLUMNS)
     val a = new Vector(nativeA.data)
 

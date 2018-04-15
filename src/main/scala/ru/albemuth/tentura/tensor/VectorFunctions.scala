@@ -18,11 +18,12 @@ object VectorFunctions {
   }
 
   def bincount(vector: Vector[Int], maxValue: Int, result: Vector[Int]): Vector[Int] = {
-    VectorKernel.vector_r(vectorBincount, vector, result)
+    VectorKernel.vector_r(vectorBincount, vector, maxValue, result)
   }
 
   def bincount(vector: Vector[Int], maxValue: Int): Vector[Int] = {
-    VectorKernel.vector(vectorBincount, vector, new Vector[Int](maxValue + 1))
+    val result = vector.result(vectorBincount, maxValue, new Vector[Int](maxValue + 1))
+    VectorKernel.vector_r(vectorBincount, vector, maxValue, result)
   }
 
   def sort[T: ClassTag](vector: Vector[T]): (Vector[T], SortOperation) = {

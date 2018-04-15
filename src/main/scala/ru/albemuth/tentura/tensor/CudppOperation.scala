@@ -39,7 +39,15 @@ object CudppOperation {
   }
 
   def datatype[T: ClassTag](vector: Vector[T]): Int = {
-    implicitly[ClassTag[T]].runtimeClass match {
+    datatype(implicitly[ClassTag[T]])
+  }
+
+  def datatype[T: ClassTag](matrix: Matrix[T]): Int = {
+    datatype(implicitly[ClassTag[T]])
+  }
+
+  def datatype[T: ClassTag](classTag: ClassTag[T]): Int = {
+    classTag.runtimeClass match {
       case b if b == classOf[Boolean] => CUDPPDatatype.CUDPP_DATATYPE_INVALID
       case b if b == classOf[Byte] => CUDPPDatatype.CUDPP_CHAR
       case c if c == classOf[Char] => CUDPPDatatype.CUDPP_SHORT

@@ -26,11 +26,11 @@ class Matrix[T: ClassTag](override val deviceDataPtr: CUdeviceptr, val rows: Int
   }
 
   def apply(i: Int): Vector[T] = {
-    new Vector(deviceDataPtr.withByteOffset(i * columns * sizeOf()), columns)
+    result("apply", i, new Vector(deviceDataPtr.withByteOffset(i * columns * sizeOf()), columns))
   }
 
   def apply(i: Int, j: Int): Scalar[T] = {
-    new Scalar(deviceDataPtr.withByteOffset((i * columns + j) * sizeOf()))
+    result("apply", (i, j), new Scalar(deviceDataPtr.withByteOffset((i * columns + j) * sizeOf())))
   }
 
   def apply(columnsIndices: Vector[Int]): Vector[T] = {
