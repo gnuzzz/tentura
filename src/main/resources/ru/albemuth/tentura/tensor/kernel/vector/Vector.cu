@@ -288,3 +288,16 @@ __device__ void slice(const T* vector, const int from, const int to, T* result, 
     result[index] = vector[vectorIndex];
   }
 }
+
+template<typename T>
+__device__ void vectorIndices(const T* vector, int* result, const int length) {
+
+  int bx = blockIdx.x;
+  int tx = threadIdx.x;
+
+  int index = bx * blockDim.x + tx;
+
+  if (index < length) {
+    result[index] = index;
+  }
+}

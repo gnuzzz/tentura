@@ -62,12 +62,20 @@ class Vector[T: ClassTag](override val deviceDataPtr: CUdeviceptr, val length: I
     data
   }
 
-  def values(indicies: Vector[Int]): Vector[T] = {
-    VectorKernel.vector2(vectorValues, this, indicies, new Vector[T](indicies.length))
+  def values(indices: Vector[Int]): Vector[T] = {
+    VectorKernel.vector2(vectorValues, this, indices, new Vector[T](indices.length))
   }
 
-  def values(indicies: Vector[Int], result: Vector[T]): Vector[T] = {
-    VectorKernel.vector2_r(vectorValues, this, indicies, result)
+  def values(indices: Vector[Int], result: Vector[T]): Vector[T] = {
+    VectorKernel.vector2_r(vectorValues, this, indices, result)
+  }
+
+  def values(indices: Matrix[Int]): Matrix[T] = {
+    MatrixKernel.matrix2(vectorValuesMatrix, this, indices, new Matrix[T](indices.rows, indices.columns))
+  }
+
+  def values(indices: Matrix[Int], result: Matrix[T]): Matrix[T] = {
+    MatrixKernel.matrix2_r(vectorValuesMatrix, this, indices, result)
   }
 
   def +(matrix: Matrix[T]): Matrix[T] = {
@@ -386,6 +394,14 @@ class Vector[T: ClassTag](override val deviceDataPtr: CUdeviceptr, val length: I
     VectorFunctions.argmin(this)
   }
 
+  def indices(): Vector[Int] = {
+    VectorKernel.vector(vectorIndices, this, new Vector[Int](length))
+  }
+
+  def reverse(): Vector[T] = {
+    ???
+  }
+
 }
 
 object Vector {
@@ -409,6 +425,8 @@ object Vector {
   lazy val value = new KernelTemplate(new Value)
   lazy val vectorSlice = new KernelTemplate(new Slice)
   lazy val vectorValues = new KernelTemplate(new Values)
+  lazy val vectorIndices = new KernelTemplate(new VectorIndices)
+  lazy val vectorValuesMatrix = new KernelTemplate(new VectorValuesMatrix)
 
   def apply[T: ClassTag](length: Int): VectorBuilder[T] = new VectorBuilder[T](length)
 

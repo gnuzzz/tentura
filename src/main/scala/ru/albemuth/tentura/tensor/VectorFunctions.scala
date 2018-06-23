@@ -1,5 +1,7 @@
 package ru.albemuth.tentura.tensor
 
+import ru.albemuth.jcuda.jcusegsort.{KeySortContext, KeyValueSortContext, Sorting}
+import ru.albemuth.tentura.kernel.JCudaKernel.datatype
 import ru.albemuth.tentura.kernel.KernelTemplate
 import ru.albemuth.tentura.tensor.SortOrder.SortOrder
 import ru.albemuth.tentura.tensor.kernel.vector._
@@ -26,28 +28,140 @@ object VectorFunctions {
     VectorKernel.vector_r(vectorBincount, vector, maxValue, result)
   }
 
-  def sort[T: ClassTag](vector: Vector[T]): (Vector[T], SortOperation) = {
-    val sort = CudppSort.sort(vector)
-    val result = sort(vector)
-    (result, sort)
+  def sort[T: ClassTag](vector: Vector[T], context: KeySortContext): Vector[T] = {
+    Sorting.sort(vector.deviceDataPtr, datatype(), vector.length, context)
+    vector
   }
 
-  def sort[T: ClassTag](vector: Vector[T], order: SortOrder): (Vector[T], SortOperation) = {
-    val sort = CudppSort.sort(vector, order)
-    val result = sort(vector)
-    (result, sort)
+  def sort[T: ClassTag](vector: Vector[T]): Vector[T] = {
+    Sorting.sort(vector.deviceDataPtr, datatype(), vector.length)
+    vector
   }
 
-  def argsort[T: ClassTag](vector: Vector[T]): (Vector[Int], ArgsortOperation) = {
-    val argsort = CudppSort.argsort(vector)
-    val result = argsort(vector)
-    (result, argsort)
+  def sort[T: ClassTag](vector: Vector[T], order: SortOrder, context: KeySortContext): Vector[T] = {
+    Sorting.sort(vector.deviceDataPtr, datatype(), vector.length, context)
+    if (order == SortOrder.ASC) {
+      vector
+    } else {
+      vector.reverse()
+    }
   }
 
-  def argsort[T: ClassTag](vector: Vector[T], order: SortOrder): (Vector[Int], ArgsortOperation) = {
-    val argsort = CudppSort.argsort(vector, order)
-    val result = argsort(vector)
-    (result, argsort)
+  def sort[T: ClassTag](vector: Vector[T], order: SortOrder): Unit = {
+    Sorting.sort(vector.deviceDataPtr, datatype(), vector.length)
+    if (order == SortOrder.ASC) {
+      vector
+    } else {
+      vector.reverse()
+    }
+  }
+
+  def sort[K: ClassTag, V: ClassTag](keys: Vector[K], values: Vector[V], context: KeyValueSortContext): (Vector[K], Vector[V]) = {
+    Sorting.sort(keys.deviceDataPtr, datatype[K](), values.deviceDataPtr, datatype[V](), keys.length, context)
+    (keys, values)
+  }
+
+  def sort[K: ClassTag, V: ClassTag](keys: Vector[K], values: Vector[V]): (Vector[K], Vector[V]) = {
+    Sorting.sort(keys.deviceDataPtr, datatype[K](), values.deviceDataPtr, datatype[V](), keys.length)
+    (keys, values)
+  }
+
+  def sort[K: ClassTag, V: ClassTag](keys: Vector[K], values: Vector[V], order: SortOrder, context: KeyValueSortContext): (Vector[K], Vector[V]) = {
+    Sorting.sort(keys.deviceDataPtr, datatype[K](), values.deviceDataPtr, datatype[V](), keys.length, context)
+    if (order == SortOrder.ASC) {
+      (keys, values)
+    } else {
+      (keys.reverse(), values.reverse())
+    }
+  }
+
+  def sort[K: ClassTag, V: ClassTag](keys: Vector[K], values: Vector[V], order: SortOrder): (Vector[K], Vector[V]) = {
+    Sorting.sort(keys.deviceDataPtr, datatype[K](), values.deviceDataPtr, datatype[V](), keys.length)
+    if (order == SortOrder.ASC) {
+      (keys, values)
+    } else {
+      (keys.reverse(), values.reverse())
+    }
+  }
+
+  def sort[T: ClassTag](vector: Vector[T], segments: Vector[Int], context: KeySortContext): Vector[T] = {
+    Sorting.sort(vector.deviceDataPtr, datatype(), vector.length, segments.deviceDataPtr, segments.length, context)
+    vector
+  }
+
+  def sort[T: ClassTag](vector: Vector[T], segments: Vector[Int]): Vector[T] = {
+    Sorting.sort(vector.deviceDataPtr, datatype(), vector.length, segments.deviceDataPtr, segments.length)
+    vector
+  }
+
+  def sort[T: ClassTag](vector: Vector[T], segments: Vector[Int], order: SortOrder, context: KeySortContext): Vector[T] = {
+    Sorting.sort(vector.deviceDataPtr, datatype(), vector.length, segments.deviceDataPtr, segments.length, context)
+    if (order == SortOrder.ASC) {
+      vector
+    } else {
+      ???
+    }
+  }
+
+  def sort[T: ClassTag](vector: Vector[T], segments: Vector[Int], order: SortOrder): Unit = {
+    Sorting.sort(vector.deviceDataPtr, datatype(), vector.length, segments.deviceDataPtr, segments.length)
+    if (order == SortOrder.ASC) {
+      vector
+    } else {
+      ???
+    }
+  }
+
+  def sort[K: ClassTag, V: ClassTag](keys: Vector[K], values: Vector[V], segments: Vector[Int], context: KeyValueSortContext): (Vector[K], Vector[V]) = {
+    Sorting.sort(keys.deviceDataPtr, datatype[K](), values.deviceDataPtr, datatype[V](), keys.length, segments.deviceDataPtr, segments.length, context)
+    (keys, values)
+  }
+
+  def sort[K: ClassTag, V: ClassTag](keys: Vector[K], values: Vector[V], segments: Vector[Int]): (Vector[K], Vector[V]) = {
+    Sorting.sort(keys.deviceDataPtr, datatype[K](), values.deviceDataPtr, datatype[V](), keys.length, segments.deviceDataPtr, segments.length)
+    (keys, values)
+  }
+
+  def sort[K: ClassTag, V: ClassTag](keys: Vector[K], values: Vector[V], segments: Vector[Int], order: SortOrder, context: KeyValueSortContext): (Vector[K], Vector[V]) = {
+    Sorting.sort(keys.deviceDataPtr, datatype[K](), values.deviceDataPtr, datatype[V](), keys.length, segments.deviceDataPtr, segments.length, context)
+    if (order == SortOrder.ASC) {
+      (keys, values)
+    } else {
+      ???
+    }
+  }
+
+  def sort[K: ClassTag, V: ClassTag](keys: Vector[K], values: Vector[V], segments: Vector[Int], order: SortOrder): (Vector[K], Vector[V]) = {
+    Sorting.sort(keys.deviceDataPtr, datatype[K](), values.deviceDataPtr, datatype[V](), keys.length, segments.deviceDataPtr, segments.length)
+    if (order == SortOrder.ASC) {
+      (keys, values)
+    } else {
+      ???
+    }
+  }
+
+  def argsort[T: ClassTag](vector: Vector[T], context: KeyValueSortContext): Vector[Int] = {
+    val indices = vector.indices()
+    sort(vector, indices, context)
+    indices
+  }
+
+  def argsort[T: ClassTag](vector: Vector[T]): Vector[Int] = {
+    val indices = vector.indices()
+    sort[T, Int](vector, indices)
+    indices
+  }
+
+  def argsort[T: ClassTag](vector: Vector[T], order: SortOrder, context: KeyValueSortContext): Vector[Int] = {
+    val indices = vector.indices()
+    sort(vector, indices, order, context)
+    indices
+  }
+
+  def argsort[T: ClassTag](vector: Vector[T], order: SortOrder): Vector[Int] = {
+    val indices = vector.indices()
+    sort(vector, indices, order)
+    indices
   }
 
   def sum[T: ClassTag](vector: Vector[T], result: Scalar[T]): Scalar[T] = {

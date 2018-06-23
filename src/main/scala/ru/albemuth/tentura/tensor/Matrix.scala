@@ -1,7 +1,7 @@
 package ru.albemuth.tentura.tensor
 
 import Matrix._
-import jcuda.driver.CUdeviceptr
+import jcuda.driver.{CUdeviceptr, JCudaDriver}
 import ru.albemuth.tentura.DeviceVar
 import ru.albemuth.tentura.kernel.JCudaKernel.{devicePtr, sizeOf}
 import ru.albemuth.tentura.kernel.KernelTemplate
@@ -53,10 +53,53 @@ class Matrix[T: ClassTag](override val deviceDataPtr: CUdeviceptr, val rows: Int
     VectorKernel.vector_r(setColumnsValues, this, columnsIndices, values)
   }
 
+  def slice(from: Int, to: Int, axis: Int): Matrix[T] = {
+    if (axis == 0) {
+      val result = new Matrix[T](to - from, columns)
+      val itemSize = sizeOf()
+      JCudaDriver.cuMemcpyDtoD(result.deviceDataPtr, deviceDataPtr.withByteOffset(from * columns * itemSize), (to - from) * columns * itemSize)
+      result
+    } else {
+      //todo - use JCudaDriver.cuMemcpy2D
+      MatrixKernel.matrix(matrixSliceColumns, this, from, to, new Matrix[T](rows, to - from))
+    }
+  }
+
+  def slice(from: Int, to: Int, axis: Int, result: Matrix[T]): Matrix[T] = {
+    if (axis == 0) {
+      val itemSize = sizeOf()
+      JCudaDriver.cuMemcpyDtoD(result.deviceDataPtr, deviceDataPtr.withByteOffset(from * columns * itemSize), (to - from) * columns * itemSize)
+      result
+    } else {
+      //todo - use JCudaDriver.cuMemcpy2D
+      MatrixKernel.matrix(matrixSliceColumns, this, from, to, result)
+    }
+  }
+
   def values(): Array[Array[T]] = {
     val data = Array.ofDim[T](rows * columns)
     copy2host(data)
     Matrix.values(rows, columns)(data)
+  }
+
+  def values(indices: Vector[Int], axis: Int): Matrix[T] = {
+    if (axis == 0) {
+      MatrixKernel.matrix2(matrixRows, this, indices, new Matrix[T](indices.length, columns))
+    } else {
+      MatrixKernel.matrix2(matrixColumns, this, indices, new Matrix[T](rows, indices.length))
+    }
+  }
+
+  def values(indices: Vector[Int], axis: Int, result: Matrix[T]): Matrix[T] = {
+    if (axis == 0) {
+      MatrixKernel.matrix2_r(matrixRows, this, indices, result)
+    } else {
+      MatrixKernel.matrix2_r(matrixColumns, this, indices, result)
+    }
+  }
+
+  def asVector(): Vector[T] = {
+    return new Vector(deviceDataPtr, rows * columns)
   }
 
   def +(matrix: Matrix[T]): Matrix[T] = {
@@ -379,6 +422,34 @@ class Matrix[T: ClassTag](override val deviceDataPtr: CUdeviceptr, val rows: Int
     MatrixFunctions.sum(this, axis)
   }
 
+  def max(): Scalar[T] = {
+    MatrixFunctions.max(this)
+  }
+
+  def min(): Scalar[T] = {
+    MatrixFunctions.min(this)
+  }
+
+  def argmax(): Vector[Int] = {
+    MatrixFunctions.argmax(this)
+  }
+
+  def argmin(): Vector[Int] = {
+    MatrixFunctions.argmin(this)
+  }
+
+  def indices(axis: Int): Matrix[Int] = {
+    if (axis == 0) {
+      MatrixKernel.matrix(matrixRowsIndices, this, new Matrix[Int](rows, columns))
+    } else {
+      MatrixKernel.matrix(matrixColumnsIndices, this, new Matrix[Int](rows, columns))
+    }
+  }
+
+  def reverse(axis: Int): Matrix[T] = {
+    ??? //todo
+  }
+
 }
 
 object Matrix {
@@ -386,6 +457,7 @@ object Matrix {
   lazy val matrixAddMatrix = new KernelTemplate(new MatrixAddMatrix)
   lazy val matrixAddScalar = new KernelTemplate(new MatrixAddScalar)
   lazy val matrixColumn = new KernelTemplate(new MatrixColumn)
+  lazy val matrixSliceColumns = new KernelTemplate(new SliceColumns)
   lazy val matrixDivScalar = new KernelTemplate(new MatrixDivScalar)
   lazy val matrixElementWiseDivMatrix = new KernelTemplate(new MatrixElementWiseDivMatrix)
   lazy val matrixElementWiseMulMatrix = new KernelTemplate(new MatrixElementWiseMulMatrix)
@@ -402,6 +474,10 @@ object Matrix {
   lazy val matrixSubColumn = new KernelTemplate(new MatrixSubColumn)
   lazy val getColumnsValues = new KernelTemplate(new GetColumnsValues)
   lazy val setColumnsValues = new KernelTemplate(new SetColumnsValues)
+  lazy val matrixColumnsIndices = new KernelTemplate(new MatrixColumnsIndices)
+  lazy val matrixRowsIndices = new KernelTemplate(new MatrixRowsIndices)
+  lazy val matrixRows = new KernelTemplate(new MatrixRows)
+  lazy val matrixColumns = new KernelTemplate(new MatrixColumns)
 
   def apply[T: ClassTag](rows: Int, columns: Int): MatrixBuilder[T] = {
     new MatrixBuilder[T](rows, columns)

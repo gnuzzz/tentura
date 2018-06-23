@@ -557,3 +557,39 @@ __device__ void vectorColumnSubMatrix(const T* vector, const T* matrix, T* resul
     result[row * numColumns + col] = sum;
   }
 }
+
+template<typename T>
+__device__ void matrixColumnsIndices(const T* matrix, int* indices,
+                                     const int numRows, const int numColumns) {
+
+  int bx = blockIdx.x;
+  int by = blockIdx.y;
+  int tx = threadIdx.x;
+  int ty = threadIdx.y;
+
+  int row = by * blockDim.y + ty;
+  int col = bx * blockDim.x + tx;
+
+  if (row < numRows && col < numColumns) {
+    int ij = row * numColumns + col;
+    indices[ij] = col;
+  }
+}
+
+template<typename T>
+__device__ void matrixRowsIndices(const T* matrix, int* indices,
+                                  const int numRows, const int numColumns) {
+
+  int bx = blockIdx.x;
+  int by = blockIdx.y;
+  int tx = threadIdx.x;
+  int ty = threadIdx.y;
+
+  int row = by * blockDim.y + ty;
+  int col = bx * blockDim.x + tx;
+
+  if (row < numRows && col < numColumns) {
+    int ij = row * numColumns + col;
+    indices[ij] = row;
+  }
+}

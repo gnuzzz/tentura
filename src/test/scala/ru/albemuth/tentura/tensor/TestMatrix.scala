@@ -728,7 +728,7 @@ class TestMatrix extends FunSuite with TestUtils with TestWithResult {
   }
 
   test("matrix + row, result") {
-    testWithResultMV_M(matrix(ROWS, COLUMNS), vector(COLUMNS), _ + _, _ + (_, _))
+    testWithResultMV_M[Float, Float](matrix(ROWS, COLUMNS), vector(COLUMNS), _ + _, _ + (_, _))
   }
 
   test("matrix +| column") {
@@ -746,7 +746,7 @@ class TestMatrix extends FunSuite with TestUtils with TestWithResult {
   }
 
   test("matrix +| column, result") {
-    testWithResultMV_M(matrix(ROWS, COLUMNS), vector(COLUMNS), _ +| _, _ +| (_, _))
+    testWithResultMV_M[Float, Float](matrix(ROWS, COLUMNS), vector(COLUMNS), _ +| _, _ +| (_, _))
   }
 
   test("matrix - row") {
@@ -764,7 +764,7 @@ class TestMatrix extends FunSuite with TestUtils with TestWithResult {
   }
 
   test("matrix - row, result") {
-    testWithResultMV_M(matrix(ROWS, COLUMNS), vector(COLUMNS), _ - _, _ - (_, _))
+    testWithResultMV_M[Float, Float](matrix(ROWS, COLUMNS), vector(COLUMNS), _ - _, _ - (_, _))
   }
 
   test("matrix -| column") {
@@ -782,7 +782,7 @@ class TestMatrix extends FunSuite with TestUtils with TestWithResult {
   }
 
   test("matrix -| column, result") {
-    testWithResultMV_M(matrix(ROWS, COLUMNS), vector(COLUMNS), _ -| _, _ -| (_, _))
+    testWithResultMV_M[Float, Float](matrix(ROWS, COLUMNS), vector(COLUMNS), _ -| _, _ -| (_, _))
   }
   
   test("matrix(columnsIndices)") {
@@ -835,6 +835,118 @@ class TestMatrix extends FunSuite with TestUtils with TestWithResult {
 
     val maxError = compare(matrix(columnsIndices).values(), valuesData)
     assert(maxError === 0)
+  }
+
+  test("matrix.slice(from, to, axis = 0)") {
+    val data = NativeMatrix.matrixData[Float](ROWS, COLUMNS)
+//    val data = Array(Array[Float](1f, 2f, 3f), Array[Float](4f, 5f, 6f), Array[Float](7f, 8f, 9f), Array[Float](10f, 11f, 12f))
+    val matrix = Matrix.of(data)
+    val result = matrix.slice(1, matrix.rows / 2, axis = 0)
+
+    val nativeMatrix = NativeMatrix(data)
+    val nativeResult = nativeMatrix.slice(1, matrix.rows / 2, axis = 0)
+
+    val maxError = compare(result.values(), nativeResult.data)
+    assert(maxError === 0)
+  }
+
+  test("matrix.slice(from, to, axis = 1)") {
+    val data = NativeMatrix.matrixData[Float](ROWS, COLUMNS)
+    val matrix = Matrix.of(data)
+    val result = matrix.slice(1, COLUMNS / 2, axis = 1)
+
+    val nativeMatrix = NativeMatrix(data)
+    val nativeResult = nativeMatrix.slice(1, COLUMNS / 2, axis = 1)
+
+    val maxError = compare(result.values(), nativeResult.data)
+    assert(maxError === 0)
+  }
+
+  test("matrix.slice(from, to, axis = 0, result)") {
+    val data = NativeMatrix.matrixData[Float](ROWS, COLUMNS)
+    //    val data = Array(Array[Float](1f, 2f, 3f), Array[Float](4f, 5f, 6f), Array[Float](7f, 8f, 9f), Array[Float](10f, 11f, 12f))
+    val matrix = Matrix.of(data)
+    val r = new Matrix[Float](matrix.rows / 2 - 1, matrix.columns)
+    val result = matrix.slice(1, matrix.rows / 2, axis = 0, r)
+    assert(result === r)
+
+    val nativeMatrix = NativeMatrix(data)
+    val nativeResult = nativeMatrix.slice(1, matrix.rows / 2, axis = 0)
+
+    val maxError = compare(result.values(), nativeResult.data)
+    assert(maxError === 0)
+  }
+
+  test("matrix.slice(from, to, axis = 1, result)") {
+    val data = NativeMatrix.matrixData[Float](ROWS, COLUMNS)
+    val matrix = Matrix.of(data)
+    val r = new Matrix[Float](matrix.rows, matrix.columns / 2 - 1)
+    val result = matrix.slice(1, COLUMNS / 2, axis = 1, r)
+    assert(result === r)
+
+    val nativeMatrix = NativeMatrix(data)
+    val nativeResult = nativeMatrix.slice(1, COLUMNS / 2, axis = 1)
+
+    val maxError = compare(result.values(), nativeResult.data)
+    assert(maxError === 0)
+  }
+
+  test("matrix.values(indices, axis = 0, result)") {
+    def indices(length: Int, maxValue: Int): Array[Int] = {
+      val indices = Array.ofDim[Int](length)
+      for (i <- indices.indices) {
+        indices(i) = (Math.random() * maxValue).toInt
+      }
+      indices
+    }
+
+    {
+      val data = NativeMatrix.matrixData[Float](ROWS, COLUMNS)
+//      val data = Array(Array(1f, 2f, 3f), Array(4f, 5f, 6f))
+      val idxs = indices(ROWS, ROWS)
+//      val idxs = Array(1, 0, 0)
+      val result = Matrix.of(data).values(Vector.of(idxs), axis = 0)
+
+      val nativeResult = (for (i <- idxs.indices) yield {
+        data(idxs(i))
+      }).toArray
+
+      val maxError = compare(result.values(), nativeResult)
+      assert(maxError === 0)
+    }
+
+    testWithResultMV_M[Float, Int](matrix(ROWS, COLUMNS), Vector.of(indices(ROWS, ROWS)), _.values(_, axis = 0), _.values(_, axis = 0, _))
+    testWithResultMV_M[Float, Int](matrix(ROWS, COLUMNS), Vector.of(indices(ROWS / 2 + 1, ROWS)), _.values(_, axis = 0), _.values(_, axis = 0, _))
+    testWithResultMV_M[Float, Int](matrix(ROWS, COLUMNS), Vector.of(indices(ROWS * 2 + 1, ROWS)), _.values(_, axis = 0), _.values(_, axis = 0, _))
+  }
+
+  test("matrix.values(indices, axis = 1, result)") {
+    def indices(length: Int, maxValue: Int): Array[Int] = {
+      val indices = Array.ofDim[Int](length)
+      for (i <- indices.indices) {
+        indices(i) = (Math.random() * maxValue).toInt
+      }
+      indices
+    }
+
+    {
+      val data = NativeMatrix.matrixData[Float](ROWS, COLUMNS)
+//      val data = Array(Array(1f, 2f, 3f), Array(4f, 5f, 6f))
+      val idxs = indices(ROWS, COLUMNS)
+//      val idxs = Array(2, 1, 1)
+      val result = Matrix.of(data).values(Vector.of(idxs), axis = 1)
+
+      val nativeResult = (for (i <- data.indices) yield {
+        idxs.map(data(i)(_))
+      }).toArray
+
+      val maxError = compare(result.values(), nativeResult)
+      assert(maxError === 0)
+    }
+
+    testWithResultMV_M[Float, Int](matrix(ROWS, COLUMNS), Vector.of(indices(COLUMNS, COLUMNS)), _.values(_, axis = 1), _.values(_, axis = 1, _))
+    testWithResultMV_M[Float, Int](matrix(ROWS, COLUMNS), Vector.of(indices(COLUMNS / 2 + 1, COLUMNS)), _.values(_, axis = 1), _.values(_, axis = 1, _))
+    testWithResultMV_M[Float, Int](matrix(ROWS, COLUMNS), Vector.of(indices(COLUMNS * 2 + 1, COLUMNS)), _.values(_, axis = 1), _.values(_, axis = 1, _))
   }
 
   /*

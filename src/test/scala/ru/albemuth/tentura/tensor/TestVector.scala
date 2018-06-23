@@ -703,7 +703,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test("row + matrix, result") {
-    testWithResultVM_M(vector(COLUMNS), matrix(ROWS, COLUMNS), _ + _, _ + (_, _))
+    testWithResultVM_M[Float, Float](vector(COLUMNS), matrix(ROWS, COLUMNS), _ + _, _ + (_, _))
   }
 
   test("column +| matrix") {
@@ -721,7 +721,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test("column +| matrix, result") {
-    testWithResultVM_M(vector(ROWS), matrix(ROWS, COLUMNS), _ +| _, _ +| (_, _))
+    testWithResultVM_M[Float, Float](vector(ROWS), matrix(ROWS, COLUMNS), _ +| _, _ +| (_, _))
   }
 
   test("row - matrix") {
@@ -739,7 +739,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test("row - matrix, result") {
-    testWithResultVM_M(vector(COLUMNS), matrix(ROWS, COLUMNS), _ - _, _ - (_, _))
+    testWithResultVM_M[Float, Float](vector(COLUMNS), matrix(ROWS, COLUMNS), _ - _, _ - (_, _))
   }
 
   test("column -| matrix") {
@@ -757,7 +757,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test("column -| matrix, result") {
-    testWithResultVM_M(vector(ROWS), matrix(ROWS, COLUMNS), _ -| _, _ -| (_, _))
+    testWithResultVM_M[Float, Float](vector(ROWS), matrix(ROWS, COLUMNS), _ -| _, _ -| (_, _))
   }
 
   test("vector(i)") {
@@ -875,7 +875,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
     check(data, ROWS * 2)
   }
 
-  test("vector.values(indices, result)") {
+  test("vector.values(indices: Vector[Int], result)") {
     def indices(length: Int): Array[Int] = {
       val indices = Array.ofDim[Int](length)
       for (i <- indices.indices) {
@@ -886,6 +886,36 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
     testWithResultVV_V[Float, Int](vector(ROWS), Vector.of(indices(ROWS)), _.values(_), _.values(_, _))
     testWithResultVV_V[Float, Int](vector(ROWS), Vector.of(indices(ROWS / 2)), _.values(_), _.values(_, _))
     testWithResultVV_V[Float, Int](vector(ROWS), Vector.of(indices(ROWS * 2)), _.values(_), _.values(_, _))
+  }
+
+  test("vector.values(indices: Matrix[Int], result)") {
+    def indices(rows: Int, columns: Int): Array[Array[Int]] = {
+      val indices = (for (i <- 0 to rows) yield {
+        val row = Array.ofDim[Int](columns)
+        for (i <- row.indices) {
+          row(i) = (Math.random() * COLUMNS).toInt
+        }
+        row
+      }).toArray
+      indices
+    }
+
+    {
+      val data = NativeVector.vectorData(COLUMNS)
+      val idxs = indices(ROWS, COLUMNS)
+      val result = Vector.of(data).values(Matrix.of(idxs))
+
+      val nativeResult = (for (i <- idxs.indices) yield {
+        idxs(i).map(data(_))
+      }).toArray
+
+      val maxError = compare(result.values(), nativeResult)
+      assert(maxError === 0)
+    }
+
+    testWithResultVM_M[Float, Int](vector(COLUMNS), Matrix.of(indices(ROWS, COLUMNS)), _.values(_), _.values(_, _))
+    testWithResultVM_M[Float, Int](vector(COLUMNS), Matrix.of(indices(ROWS / 2 + 1, COLUMNS)), _.values(_), _.values(_, _))
+    testWithResultVM_M[Float, Int](vector(COLUMNS), Matrix.of(indices(ROWS * 2 + 1, COLUMNS)), _.values(_), _.values(_, _))
   }
 
 }

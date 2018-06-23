@@ -1,6 +1,7 @@
 package ru.albemuth.tentura.tensor
 
 import org.scalatest.FunSuite
+import ru.albemuth.jcuda.jcusegsort.{Datatype, Sorting}
 import ru.albemuth.tentura.tensor.VectorFunctions._
 import ru.albemuth.tentura.tensor.kernel.vector._
 
@@ -152,5 +153,79 @@ class TestVectorFunctions extends FunSuite with TestUtils with TestWithResult {
   test("argmin(vector, result)") {
     testWithResultV_S[Float, Int](vector(COLUMNS), VectorFunctions.argmin(_), VectorFunctions.argmin(_,  _))
   }
+
+  test("sort(vector, context)") {
+    val data = NativeVector.vectorData(COLUMNS)
+    val vector = Vector.of(data)
+    val context = Sorting.keySortContext(Datatype.FLOAT, vector.length, 1)
+    val sortedVector = VectorFunctions.sort(vector, context)
+
+    val maxError = compare(sortedVector.values(), data.sorted)
+    assert(maxError === 0)
+  }
+
+  test("sort(vector)") {
+    val data = NativeVector.vectorData(COLUMNS)
+    val vector = Vector.of(data)
+    val sortedVector = VectorFunctions.sort(vector)
+
+    val maxError = compare(sortedVector.values(), data.sorted)
+    assert(maxError === 0)
+  }
+
+  //todo - tests for 12 sort methods
+
+/*
+  test("loop sort(vector, context)") {
+    val data = NativeVector.vectorData(2)
+    val vector = Vector.of(data)
+    val context = Sorting.keySortContext(Datatype.FLOAT, vector.length, 1)
+    for (k <- 0 to 10) {
+      for (i <- 0 to 1000) {
+        val sortedIndices = VectorFunctions.sort(vector, context)
+      }
+      Memory.print("device memory: ")
+    }
+  }
+
+  test("loop argsort(vector, context)") {
+    val data = NativeVector.vectorData(4000)
+    val vector = Vector.of(data)
+    val context = Sorting.keyValueSortContext(Datatype.FLOAT, Datatype.INT, vector.length, 1)
+    for (k <- 0 to 10) {
+      for (i <- 0 to 1000) {
+        val sortedIndices = VectorFunctions.argsort(vector, context)
+      }
+      Memory.print("device memory: ")
+    }
+  }
+*/
+
+  test("argsort(vector, context)") {
+    val data = NativeVector.vectorData(COLUMNS)
+    val vector = Vector.of(data)
+    val context = Sorting.keyValueSortContext(Datatype.FLOAT, Datatype.INT, vector.length, 1)
+    val sortedIndices = VectorFunctions.argsort(vector, context)
+
+    val nativeVector = NativeVector(data)
+    val nativeSortedIndices = NativeOperations.argsort(nativeVector)
+
+    val maxError = compare(sortedIndices.values(), nativeSortedIndices.data.map(_.toInt))
+    assert(maxError === 0)
+  }
+
+  test("argsort(vector)") {
+    val data = NativeVector.vectorData(COLUMNS)
+    val vector = Vector.of(data)
+    val sortedIndices = VectorFunctions.argsort(vector)
+
+    val nativeVector = NativeVector(data)
+    val nativeSortedIndices = NativeOperations.argsort(nativeVector)
+
+    val maxError = compare(sortedIndices.values(), nativeSortedIndices.data.map(_.toInt))
+    assert(maxError === 0)
+  }
+
+  //todo - tests for 2 argsort methods
 
 }
