@@ -2,8 +2,9 @@ package ru.albemuth.tentura.tensor
 
 import NativeMatrix.emptyMatrix
 import NativeVector.emptyVector
-
 import java.util.Random
+
+import ru.albemuth.tentura.tensor.kernel.matrix.SumColumns
 
 import scala.reflect.ClassTag
 
@@ -133,7 +134,7 @@ class NativeMatrix(v: Array[Array[Float]]) {
     result
   }
 
-  def *(matrix: NativeMatrix): NativeMatrix = {
+  def ***(matrix: NativeMatrix): NativeMatrix = {
     val result = emptyMatrix(rows, matrix.columns)
 
     for (i <- result.data.indices) {
@@ -150,7 +151,7 @@ class NativeMatrix(v: Array[Array[Float]]) {
     result
   }
 
-  def *(vector: NativeVector): NativeVector = {
+  def ***(vector: NativeVector): NativeVector = {
     val result = emptyVector(rows)
 
     for (i <- result.data.indices) {
@@ -159,6 +160,30 @@ class NativeMatrix(v: Array[Array[Float]]) {
         ri += data(i)(j) * vector.data(j)
       }
       result.data(i) = ri
+    }
+
+    result
+  }
+
+  def *(vector: NativeVector): NativeMatrix = {
+    val result = emptyMatrix(rows, columns)
+
+    for (i <- data.indices) {
+      for (j <- data(i).indices) {
+        result.data(i)(j) = data(i)(j) * vector.data(j)
+      }
+    }
+
+    result
+  }
+
+  def *|(vector: NativeVector): NativeMatrix = {
+    val result = emptyMatrix(rows, columns)
+
+    for (i <- data.indices) {
+      for (j <- data(i).indices) {
+        result.data(i)(j) = data(i)(j) * vector.data(i)
+      }
     }
 
     result
@@ -178,7 +203,7 @@ class NativeMatrix(v: Array[Array[Float]]) {
     result
   }
 
-  def :*(matrix: NativeMatrix): NativeMatrix = {
+  def *(matrix: NativeMatrix): NativeMatrix = {
     val result = emptyMatrix(rows, columns)
 
     for (i <- data.indices) {
@@ -207,7 +232,31 @@ class NativeMatrix(v: Array[Array[Float]]) {
     result
   }
 
-  def :/(matrix: NativeMatrix): NativeMatrix = {
+  def /(vector: NativeVector): NativeMatrix = {
+    val result = emptyMatrix(rows, columns)
+
+    for (i <- data.indices) {
+      for (j <- data(i).indices) {
+        result.data(i)(j) = data(i)(j) / vector.data(j)
+      }
+    }
+
+    result
+  }
+
+  def /|(vector: NativeVector): NativeMatrix = {
+    val result = emptyMatrix(rows, columns)
+
+    for (i <- data.indices) {
+      for (j <- data(i).indices) {
+        result.data(i)(j) = data(i)(j) / vector.data(i)
+      }
+    }
+
+    result
+  }
+
+  def /(matrix: NativeMatrix): NativeMatrix = {
     val result = emptyMatrix(rows, columns)
 
     for (i <- data.indices) {
@@ -229,7 +278,7 @@ class NativeMatrix(v: Array[Array[Float]]) {
       val row = data(i)
       val resultRow = result.data(i)
       for (j <- row.indices) {
-        resultRow(j) = Math.pow(row(j), power).toFloat
+        resultRow(j) = java.lang.Math.pow(row(j), power).toFloat
       }
     }
 
@@ -250,7 +299,7 @@ class NativeMatrix(v: Array[Array[Float]]) {
     result
   }
 
-  def ^(power: Float): NativeMatrix = {
+  def *^(power: Float): NativeMatrix = {
     if (power == 2) {
       pow2()
     } else {
@@ -286,6 +335,14 @@ class NativeMatrix(v: Array[Array[Float]]) {
     result
   }
 
+  def slice(from: Int, to: Int, axis: Int): NativeMatrix = {
+    if (axis == 0) {
+      NativeMatrix(data.slice(from, to))
+    } else {
+      NativeMatrix(data.map(_.slice(from, to)))
+    }
+  }
+
   def sum(): Float = {
     (for (row <- data) yield row.sum).sum
   }
@@ -300,7 +357,47 @@ class NativeMatrix(v: Array[Array[Float]]) {
       }
       NativeVector(resultData)
     } else {
-      NativeVector(for (row <- data) yield row.sum)
+      NativeVector(for (row <- data) yield NativeVector.sumPar(row, SumColumns.TILE_DIM))
+    }
+  }
+
+  def max(): Float = {
+    data.map(_.max).max
+  }
+
+  def max(axis: Int): NativeVector = {
+    if (axis == 0) {
+      this.t.max(axis = 1)
+    } else {
+      NativeVector(data.map(_.max))
+    }
+  }
+
+  def min(): Float = {
+    data.map(_.min).min
+  }
+
+  def min(axis: Int): NativeVector = {
+    if (axis == 0) {
+      this.t.min(axis = 1)
+    } else {
+      NativeVector(data.map(_.min))
+    }
+  }
+
+  def argmax(axis: Int): NativeVector = {
+    if (axis == 0) {
+      this.t.argmax(axis = 1)
+    } else {
+      NativeVector(data.map(_.zipWithIndex.maxBy(_._1)._2.toFloat))
+    }
+  }
+
+  def argmin(axis: Int): NativeVector = {
+    if (axis == 0) {
+      this.t.argmin(axis = 1)
+    } else {
+      NativeVector(data.map(_.zipWithIndex.minBy(_._1)._2.toFloat))
     }
   }
 

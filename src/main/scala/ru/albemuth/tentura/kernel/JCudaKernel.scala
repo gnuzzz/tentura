@@ -4,6 +4,8 @@ import jcuda.{Pointer, Sizeof}
 import jcuda.driver._
 import java.io._
 
+import ru.albemuth.jcuda.jcusegsort.Datatype
+
 import scala.collection.mutable
 import scala.io.Source
 import scala.reflect.ClassTag
@@ -19,12 +21,18 @@ object JCudaKernel {
 
   private val modules = new mutable.HashMap[String, CUmodule]()
 
+  val device = new CUdevice
+  lazy val numberOfSMs: Int = {
+    val value = Array.ofDim[Int](1)
+    JCudaDriver.cuDeviceGetAttribute(value, CUdevice_attribute.CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, device)
+    value(0)
+  }
+
   JCudaKernel.init()
 
   def init(): Unit = {
     JCudaDriver.setExceptionsEnabled(true)
     JCudaDriver.cuInit(0)
-    val device = new CUdevice
     JCudaDriver.cuDeviceGet(device, 0)
     val context = new CUcontext
     JCudaDriver.cuCtxCreate(context, 0, device)
@@ -79,7 +87,7 @@ object JCudaKernel {
 
     processTemplates(cuFile.getPath, processedCuFile.getPath)
     val modelString = "-m" + System.getProperty("sun.arch.data.model")
-    val command = "nvcc " + modelString + " -ptx " + processedCuFile.getPath + " -arch=sm_35 -o " + ptxFile.getPath
+    val command = "nvcc " + modelString + " -ptx " + processedCuFile.getPath + " -arch=sm_35 --expt-relaxed-constexpr -o " + ptxFile.getPath
 
     val process = Runtime.getRuntime.exec(command)
 
@@ -195,10 +203,25 @@ __global__ void ${name}_${postfix}(${formalParams(params, typeName)}) {
     tTag.newArray(length)
   }
 
-  def devicePtr[T: ClassTag](dataLength: Int): CUdeviceptr = {
+  def devicePtr[T: ClassTag](dataLength: Long): CUdeviceptr = {
     val devicePtr = new CUdeviceptr
     JCudaDriver.cuMemAlloc(devicePtr, dataLength * sizeOf[T]())
     devicePtr
+  }
+
+  def datatype[T: ClassTag](): Datatype = {
+    val clazz = implicitly[ClassTag[T]].runtimeClass
+    clazz match {
+      case b if b == classOf[Boolean] => Datatype.BOOLEAN
+      case b if b == classOf[Byte] => Datatype.BYTE
+      case c if c == classOf[Char] => Datatype.CHAR
+      case s if s == classOf[Short] => Datatype.SHORT
+      case i if i == classOf[Int] => Datatype.INT
+      case l if l == classOf[Long] => Datatype.LONG
+      case f if f == classOf[Float] => Datatype.FLOAT
+      case d if d == classOf[Double] => Datatype.DOUBLE
+      case _ => ??? //not supported
+    }
   }
 
 }

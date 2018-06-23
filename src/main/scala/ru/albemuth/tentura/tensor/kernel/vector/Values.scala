@@ -8,7 +8,7 @@ import ru.albemuth.tentura.kernel.{KernelRegistry, Template}
 class Values(override val moduleName: String, override val classifier: String, override val functionName: String) extends VectorKernel(moduleName, classifier, functionName) with Template[Values] {
 
   def this() {
-    this("ru/albemuth/tentura/tensor/kernel/vector/Vector", KernelRegistry.classifier(classOf[Values]), "values")
+    this("ru/albemuth/tentura/tensor/kernel/vector/Values", KernelRegistry.classifier(classOf[Values]), "values")
   }
 
   def materialize(functionImplName: String): Values = new Values(moduleName, classifier, functionImplName)

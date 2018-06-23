@@ -479,6 +479,48 @@ __device__ void log2d(const T* data, double* result, const int length) {
 }
 
 template<typename T>
+__device__ void max1(const T* data, const T threshold, T* result, const int length) {
+
+  int bx = blockIdx.x;
+  int tx = threadIdx.x;
+  int index = bx * blockDim.x + tx;
+
+  if (index < length) {
+    T value = data[index];
+    T diff = value - threshold;
+    result[index] = diff > 0 ? value : threshold;
+  }
+}
+
+extern "C"
+__global__ void max1_Float(const float* data, const float threshold, float* result, const int length) {
+
+  int bx = blockIdx.x;
+  int tx = threadIdx.x;
+  int index = bx * blockDim.x + tx;
+
+  if (index < length) {
+    float value = data[index];
+    float diff = value - threshold;
+    result[index] = max(value, threshold);
+  }
+}
+
+extern "C"
+__global__ void max1_Double(const double* data, const double threshold, double* result, const int length) {
+
+  int bx = blockIdx.x;
+  int tx = threadIdx.x;
+  int index = bx * blockDim.x + tx;
+
+  if (index < length) {
+    double value = data[index];
+    double diff = value - threshold;
+    result[index] = max(value, threshold);
+  }
+}
+
+template<typename T>
 __device__ void max(const T* data1, const T* data2, T* result, const int length) {
 
   int bx = blockIdx.x;
@@ -514,6 +556,48 @@ __global__ void max_Double(const double* data1, const double* data2, double* res
 
   if (index < length) {
     result[index] = max(data1[index], data2[index]);
+  }
+}
+
+template<typename T>
+__device__ void min1(const T* data, const T threshold, T* result, const int length) {
+
+  int bx = blockIdx.x;
+  int tx = threadIdx.x;
+  int index = bx * blockDim.x + tx;
+
+  if (index < length) {
+    T value = data[index];
+    T diff = value - threshold;
+    result[index] = diff < 0 ? value : threshold;
+  }
+}
+
+extern "C"
+__global__ void min1_Float(const float* data, const float threshold, float* result, const int length) {
+
+  int bx = blockIdx.x;
+  int tx = threadIdx.x;
+  int index = bx * blockDim.x + tx;
+
+  if (index < length) {
+    float value = data[index];
+    float diff = value - threshold;
+    result[index] = min(value, threshold);
+  }
+}
+
+extern "C"
+__global__ void min1_Double(const double* data, const double threshold, double* result, const int length) {
+
+  int bx = blockIdx.x;
+  int tx = threadIdx.x;
+  int index = bx * blockDim.x + tx;
+
+  if (index < length) {
+    double value = data[index];
+    double diff = value - threshold;
+    result[index] = min(value, threshold);
   }
 }
 
@@ -607,27 +691,14 @@ __device__ void pow2d(const T* data, double* result, const int length) {
 }
 
 template<typename T>
-__device__ void reluf(const T* data, float* result, const int length) {
+__device__ void relu(const T* data, T* result, const int length) {
 
   int bx = blockIdx.x;
   int tx = threadIdx.x;
   int index = bx * blockDim.x + tx;
 
   if (index < length) {
-    float value = data[index];
-    result[index] = value >= 0 ? value : 0;
-  }
-}
-
-template<typename T>
-__device__ void relud(const T* data, double* result, const int length) {
-
-  int bx = blockIdx.x;
-  int tx = threadIdx.x;
-  int index = bx * blockDim.x + tx;
-
-  if (index < length) {
-    double value = data[index];
+    T value = data[index];
     result[index] = value >= 0 ? value : 0;
   }
 }

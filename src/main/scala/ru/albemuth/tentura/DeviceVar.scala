@@ -14,6 +14,8 @@ abstract class DeviceVar[T: ClassTag] {
   protected val deviceDataPtr: CUdeviceptr
   protected val resultsCache = new ResultsCache
 
+  def itemSizeOf(): Int = sizeOf()
+
   def result[R: ClassTag](function: AnyRef, resultKey: Any, result: => Matrix[R]): Matrix[R] = {
     resultsCache.result[Matrix[R]](function, resultKey, result)
   }
@@ -42,11 +44,11 @@ abstract class DeviceVar[T: ClassTag] {
     JCudaDriver.cuMemcpyHtoD(deviceDataPtr.withByteOffset(dstOffset * sizeOf()), pointer(Array(value)), sizeOf())
   }
 
-  def copy(src: DeviceVar[T], length: Int): Unit = {
+  def copyFrom(src: DeviceVar[T], length: Int): Unit = {
     JCudaDriver.cuMemcpy(deviceDataPtr, src.deviceDataPtr, length * sizeOf())
   }
 
-  def copy(src: DeviceVar[T], srcOffset: Int, dstOffset: Int, length: Int): Unit = {
+  def copyFrom(src: DeviceVar[T], srcOffset: Int, dstOffset: Int, length: Int): Unit = {
     JCudaDriver.cuMemcpy(deviceDataPtr.withByteOffset(dstOffset * sizeOf()), src.deviceDataPtr.withByteOffset(srcOffset * sizeOf()), length * sizeOf())
   }
 

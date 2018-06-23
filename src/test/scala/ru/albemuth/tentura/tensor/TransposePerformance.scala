@@ -19,7 +19,7 @@ object MatrixCopy extends App with MatrixPerformance {
   val width = 5073
   val tileDim = 64
   val blockRows = 4
-  val a = Matrix.of[Float](NativeMatrix.matrixData(width, width))
+  val a = Matrix.of(NativeMatrix.matrixData[Float](width, width))
   val result = new Matrix[Float](width, width)
 
   val params = Pointer.to(
@@ -50,7 +50,7 @@ object MatrixTransposeNaive extends App with MatrixPerformance {
   val width = 1024
   val tileDim = 32
   val blockRows = 8
-  val a = Matrix.of[Float](NativeMatrix.matrixData(width, width))
+  val a = Matrix.of(NativeMatrix.matrixData[Float](width, width))
   val result = new Matrix[Float](width, width)
 
   val params = Pointer.to(
@@ -81,7 +81,7 @@ object MatrixTransposeCoalesced extends App with MatrixPerformance {
   val width = 1024
   val tileDim = 32
   val blockRows = 8
-  val a = Matrix.of[Float](NativeMatrix.matrixData(width, width))
+  val a = Matrix.of(NativeMatrix.matrixData[Float](width, width))
   val result = new Matrix[Float](width, width)
 
   val params = Pointer.to(
@@ -112,7 +112,7 @@ object MatrixCopySharedMem extends App with MatrixPerformance {
   val width = 1024
   val tileDim = 32
   val blockRows = 8
-  val a = Matrix.of[Float](NativeMatrix.matrixData(width, width))
+  val a = Matrix.of(NativeMatrix.matrixData[Float](width, width))
   val result = new Matrix[Float](width, width)
 
   val params = Pointer.to(
@@ -143,7 +143,7 @@ object MatrixTransposeNoBankConflicts extends App with MatrixPerformance {
   val width = 1024
   val tileDim = 32
   val blockRows = 8
-  val a = Matrix.of[Float](NativeMatrix.matrixData(width, width))
+  val a = Matrix.of(NativeMatrix.matrixData[Float](width, width))
   val result = new Matrix[Float](width, width)
 
   val params = Pointer.to(
@@ -175,7 +175,7 @@ object MatrixTranspose extends App with MatrixPerformance {
   val width = 1024
   val tileDim = 32
   val blockRows = 8
-  val a = Matrix.of[Float](NativeMatrix.matrixData(width, width))
+  val a = Matrix.of(NativeMatrix.matrixData[Float](width, width))
   val result = new Matrix[Float](width, width)
 
 
@@ -208,7 +208,7 @@ object MatrixTransposeDouble extends App with MatrixPerformance {
   val width = 1024
   val tileDim = 32
   val blockRows = 8
-  val a = Matrix.of[Double](NativeMatrix.matrixData(width, width))
+  val a = Matrix.of(NativeMatrix.matrixData[Double](width, width))
   val result = new Matrix[Double](width, width)
 
   val params = Pointer.to(
@@ -241,7 +241,7 @@ object MatrixTransposeTemplate extends App with MatrixPerformance {
   val width = 1024
   val tileDim = 32
   val blockRows = 8
-  val a = Matrix.of[Float](NativeMatrix.matrixData(width, width))
+  val a = Matrix.of(NativeMatrix.matrixData[Float](width, width))
   //val a = new Matrix[Double](NativeMatrix.matrixData(width, width))
   val result = new Matrix[Float](width, width)
   //val result = new Matrix[Double](width, width)
@@ -269,7 +269,7 @@ object MatrixTransposeTemplate extends App with MatrixPerformance {
   //println(s"matrix transposeTemplateDouble time: $time")
 }
 
-object MatrixTransposeExperimental extends App with MatrixPerformance with TestUtils with FunSuiteLike {
+object TransposeExperimental$ extends App with MatrixPerformance with TestUtils with FunSuiteLike {
   //matrix transposeExperimental time: 0.9346931599999999 ms - single
   //matrix transposeExperimental time: 0.41052471999999995 ms
   //matrix transposeExperimental time: 0.5415987200000001 ms - real
@@ -283,7 +283,7 @@ object MatrixTransposeExperimental extends App with MatrixPerformance with TestU
 //  val width = 2
   val tileDim = 64
   val blockRows = 4
-  val a = Matrix.of[Float](NativeMatrix.matrixData(width, width))
+  val a = Matrix.of(NativeMatrix.matrixData[Float](width, width))
   val result = new Matrix[Float](width, width)
 
   val params = Pointer.to(

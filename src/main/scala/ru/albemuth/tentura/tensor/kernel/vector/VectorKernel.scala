@@ -3,6 +3,7 @@ package ru.albemuth.tentura.tensor.kernel.vector
 import VectorKernel.TILE_DIM
 import jcuda.Pointer
 import jcuda.driver.JCudaDriver
+import ru.albemuth.tentura.kernel.JCudaKernel.pointer
 import ru.albemuth.tentura.kernel.{GenericKernel, KernelTemplate}
 import ru.albemuth.tentura.tensor.{Matrix, Vector}
 
@@ -750,12 +751,62 @@ object VectorKernel {
     VectorKernel.vector_r(kernel, matrix, vector, result)
   }
 
+  def vector_r[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T1], vector1: Vector[T2], vector2: Vector[T2], result: Vector[R]): Vector[R] = {
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(vector1.deviceDataPtr), Pointer.to(vector2.deviceDataPtr), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns)), Pointer.to(Array[Int](result.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: VectorKernel, matrix: Matrix[T1], vector1: Vector[T2], vector2: Vector[T2], r: => Vector[R]): Vector[R] = {
+    val result = matrix.result(kernel, (vector1, vector2), r)
+    VectorKernel.vector_r(kernel, matrix, vector1, vector2, result)
+  }
+
+  def unit[T1: ClassTag, T2: ClassTag, T3: ClassTag](kernel: VectorKernel, matrix: Matrix[T1], vector1: Vector[T2], vector2: Vector[T2], scalar: T3): Unit = {
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(vector1.deviceDataPtr), Pointer.to(vector2.deviceDataPtr), pointer(Array[T3](scalar)),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns)), Pointer.to(Array[Int](vector1.length))
+    )
+
+    kernel.launch(params, vector1)
+  }
+
+  def unit[T1: ClassTag, T2: ClassTag, T3: ClassTag](kernel: VectorKernel, matrix: Matrix[T1], vector: Vector[T2], scalar: T3): Unit = {
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(vector.deviceDataPtr), pointer(Array[T3](scalar)),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, vector)
+  }
+
   def vector_r[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T1], vector: Vector[T2], result: Vector[R]): Vector[R] = {
     VectorKernel.vector_r(template.kernel[T1], matrix, vector, result)
   }
 
   def vector[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T1], vector: Vector[T2], r: => Vector[R]): Vector[R] = {
     VectorKernel.vector(template.kernel[T1], matrix, vector, r)
+  }
+
+  def vector_r[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T1], vector1: Vector[T2], vector2: Vector[T2], result: Vector[R]): Vector[R] = {
+    VectorKernel.vector_r(template.kernel[T1], matrix, vector1, vector2, result)
+  }
+
+  def vector[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T1], vector1: Vector[T2], vector2: Vector[T2], r: => Vector[R]): Vector[R] = {
+    VectorKernel.vector(template.kernel[T1], matrix, vector1, vector2, r)
+  }
+
+  def unit[T1: ClassTag, T2: ClassTag, T3: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T1], vector1: Vector[T2], vector2: Vector[T2], scalar: T3): Unit = {
+    VectorKernel.unit(template.kernel[T1], matrix, vector1, vector2, scalar)
+  }
+
+  def unit[T1: ClassTag, T2: ClassTag, T3: ClassTag](template: KernelTemplate[_ <: VectorKernel], matrix: Matrix[T1], vector: Vector[T2], scalar: T3): Unit = {
+    VectorKernel.unit(template.kernel[T1], matrix, vector, scalar)
   }
 
 }

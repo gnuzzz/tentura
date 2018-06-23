@@ -2,6 +2,7 @@ package ru.albemuth.tentura.tensor
 
 import org.scalatest.FunSuite
 import ru.albemuth.tentura.tensor.Scalar._
+import ru.albemuth.tentura.tensor.kernel.vector.Reverse
 
 /**
   * @author Vladimir Kornyshev { @literal <gnuzzz@mail.ru>}
@@ -23,6 +24,17 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
 
   test ("vector + vector, result") {
     testWithResultVV_V[Float, Float](vector(COLUMNS), vector(COLUMNS), _ + _, _ + (_, _))
+  }
+
+  test ("vector += vector") {
+    val data1 = NativeVector.vectorData(COLUMNS)
+    val data2 = NativeVector.vectorData(COLUMNS)
+    val v1 = Vector.of(data1)
+    val v2 = Vector.of(data2)
+    v1 += v2
+
+    val maxError = compare(v1.values(), data1.zip(data2).map(v => v._1 + v._2))
+    assert(maxError === 0.0f)
   }
 
   test("vector + scalar") {
@@ -104,7 +116,69 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test ("vector + scalar, result") {
-    testWithResultVS_V(vector(COLUMNS), Math.random().toFloat, _ + _, _ + (_, _))
+    testWithResultVS_V(vector(COLUMNS), java.lang.Math.random().toFloat, _ + _, _ + (_, _))
+  }
+
+  test ("vector += scalar") {
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toByte)
+      val scalar = 11.toByte
+      val v1 = Vector.of(data1)
+      v1 += scalar
+
+      val maxError = compare(v1.values(), data1.map(v => (v + scalar).toByte))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toShort)
+      val scalar = 11.toShort
+      val v1 = Vector.of(data1)
+      v1 += scalar
+
+      val maxError = compare(v1.values(), data1.map(v => (v + scalar).toShort))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toInt)
+      val scalar = 11
+      val v1 = Vector.of(data1)
+      v1 += scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v + scalar))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toLong)
+      val scalar = 11.toLong
+      val v1 = Vector.of(data1)
+      v1 += scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v + scalar))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS)
+      val scalar = 11.2f
+      val v1 = Vector.of(data1)
+      v1 += scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v + scalar))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toDouble)
+      val scalar = 11.2
+      val v1 = Vector.of(data1)
+      v1 += scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v + scalar))
+      assert(maxError === 0.0f)
+    }
   }
 
   test("vector - vector") {
@@ -124,6 +198,17 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
     testWithResultVV_V[Float, Float](vector(COLUMNS), vector(COLUMNS), _ - _, _ - (_, _))
   }
 
+  test ("vector -= vector") {
+    val data1 = NativeVector.vectorData(COLUMNS)
+    val data2 = NativeVector.vectorData(COLUMNS)
+    val v1 = Vector.of(data1)
+    val v2 = Vector.of(data2)
+    v1 -= v2
+
+    val maxError = compare(v1.values(), data1.zip(data2).map(v => v._1 - v._2))
+    assert(maxError === 0.0f)
+  }
+
   test("vector - scalar") {
     val nativeA = NativeVector.vector(ROWS)
     val a = Vector.of(nativeA.data)
@@ -137,7 +222,69 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test ("vector - scalar, result") {
-    testWithResultVS_V(vector(COLUMNS), Math.random().toFloat, _ - _, _ - (_, _))
+    testWithResultVS_V(vector(COLUMNS), java.lang.Math.random().toFloat, _ - _, _ - (_, _))
+  }
+
+  test ("vector -= scalar") {
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toByte)
+      val scalar = 11.toByte
+      val v1 = Vector.of(data1)
+      v1 -= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => (v - scalar).toByte))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toShort)
+      val scalar = 11.toShort
+      val v1 = Vector.of(data1)
+      v1 -= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => (v - scalar).toShort))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toInt)
+      val scalar = 11
+      val v1 = Vector.of(data1)
+      v1 -= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v - scalar))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toLong)
+      val scalar = 11.toLong
+      val v1 = Vector.of(data1)
+      v1 -= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v - scalar))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS)
+      val scalar = 11.2f
+      val v1 = Vector.of(data1)
+      v1 -= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v - scalar))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toDouble)
+      val scalar = 11.2
+      val v1 = Vector.of(data1)
+      v1 -= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v - scalar))
+      assert(maxError === 0.0f)
+    }
   }
 
   test("scalar - vector") {
@@ -208,7 +355,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test ("scalar - vector, result") {
-    testWithResultVS_V(vector(COLUMNS), Math.random().toFloat, (v: Vector[Float], s: Float) => s - v, (v: Vector[Float], s: Float, r: Vector[Float]) => s - (v, r))
+    testWithResultVS_V(vector(COLUMNS), java.lang.Math.random().toFloat, (v: Vector[Float], s: Float) => s - v, (v: Vector[Float], s: Float, r: Vector[Float]) => s - (v, r))
   }
 
   test("vector * scalar") {
@@ -290,7 +437,121 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test ("vector * scalar, result") {
-    testWithResultVS_V(vector(COLUMNS), Math.random().toFloat, _ * _, _ * (_, _))
+    testWithResultVS_V(vector(COLUMNS), java.lang.Math.random().toFloat, _ * _, _ * (_, _))
+  }
+
+  test ("vector *= scalar") {
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toByte)
+      val scalar = 11.toByte
+      val v1 = Vector.of(data1)
+      v1 *= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => (v * scalar).toByte))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toShort)
+      val scalar = 11.toShort
+      val v1 = Vector.of(data1)
+      v1 *= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => (v * scalar).toShort))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toInt)
+      val scalar = 11
+      val v1 = Vector.of(data1)
+      v1 *= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v * scalar))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toLong)
+      val scalar = 11.toLong
+      val v1 = Vector.of(data1)
+      v1 *= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v * scalar))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS)
+      val scalar = 11.2f
+      val v1 = Vector.of(data1)
+      v1 *= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v * scalar))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toDouble)
+      val scalar = 11.2
+      val v1 = Vector.of(data1)
+      v1 *= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v * scalar))
+      assert(maxError === 0.0f)
+    }
+  }
+
+  test("vector *** vector") {
+    val nativeA = NativeVector.vector(ROWS)
+    val nativeB = NativeVector.vector(ROWS)
+    val a = Vector.of(nativeA.data)
+    val b = Vector.of(nativeB.data)
+
+    val result = a *** b
+    val nativeResult = nativeA *** nativeB
+    val maxError = java.lang.Math.abs(result - nativeResult) / java.lang.Math.abs(nativeResult)
+    assert(maxError < 0.0001)
+    println(s"$maxError")
+  }
+
+  test("vector *** vector, result") {
+    testWithResultVV_S(vector(COLUMNS), vector(COLUMNS), _ *** _, _ *** (_, _))
+  }
+
+  test("vector * matrix") {
+    val nativeA = NativeVector.vector(ROWS)
+    val nativeB = NativeMatrix.matrix(ROWS, COLUMNS)
+    val a = Vector.of(nativeA.data)
+    val b = Matrix.of(nativeB.data)
+
+    val result = a *** b
+    val nativeResult = nativeA *** nativeB
+
+    val maxError = compare(result.values(), nativeResult.data)
+    assert(maxError < 0.0001)
+    println(s"$maxError")
+  }
+
+  test ("vector * matrix, result") {
+    testWithResultVM_V(vector(ROWS), matrix(ROWS, COLUMNS), _ *** _, _ *** (_, _))
+  }
+
+  test("vector |* vector") {
+    val nativeA = NativeVector.vector(ROWS)
+    val nativeB = NativeVector.vector(ROWS)
+    val a = Vector.of(nativeA.data)
+    val b = Vector.of(nativeB.data)
+
+    val result = a ***| b
+    val nativeResult = nativeA ** nativeB
+
+    val maxError = compare(result.values(), nativeResult.data)
+    assert(maxError === 0.0f)
+  }
+
+  test ("vector |* vector, result") {
+    testWithResultVV_M(vector(ROWS), vector(ROWS), _ ***| _, _ ***| (_, _))
   }
 
   test("vector * vector") {
@@ -301,65 +562,24 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
 
     val result = a * b
     val nativeResult = nativeA * nativeB
-    val maxError = Math.abs(result - nativeResult) / Math.abs(nativeResult)
-    assert(maxError < 0.0001)
-    println(s"$maxError")
-  }
-
-  test("vector * vector, result") {
-    testWithResultVV_S(vector(COLUMNS), vector(COLUMNS), _ * _, _ * (_, _))
-  }
-
-  test("vector * matrix") {
-    val nativeA = NativeVector.vector(ROWS)
-    val nativeB = NativeMatrix.matrix(ROWS, COLUMNS)
-    val a = Vector.of(nativeA.data)
-    val b = Matrix.of(nativeB.data)
-
-    val result = a * b
-    val nativeResult = nativeA * nativeB
-
-    val maxError = compare(result.values(), nativeResult.data)
-    assert(maxError < 0.0001)
-    println(s"$maxError")
-  }
-
-  test ("vector * matrix, result") {
-    testWithResultVM_V(vector(ROWS), matrix(ROWS, COLUMNS), _ * _, _ * (_, _))
-  }
-
-  test("vector |* vector") {
-    val nativeA = NativeVector.vector(ROWS)
-    val nativeB = NativeVector.vector(ROWS)
-    val a = Vector.of(nativeA.data)
-    val b = Vector.of(nativeB.data)
-
-    val result = a |* b
-    val nativeResult = nativeA ** nativeB
 
     val maxError = compare(result.values(), nativeResult.data)
     assert(maxError === 0.0f)
   }
 
-  test ("vector |* vector, result") {
-    testWithResultVV_M(vector(ROWS), vector(ROWS), _ |* _, _ |* (_, _))
+  test ("vector * vector, result") {
+    testWithResultVV_V[Float, Float](vector(ROWS), vector(ROWS), _ * _, _ * (_, _))
   }
 
-  test("vector :* vector") {
-    val nativeA = NativeVector.vector(ROWS)
-    val nativeB = NativeVector.vector(ROWS)
-    val a = Vector.of(nativeA.data)
-    val b = Vector.of(nativeB.data)
+  test ("vector *= vector") {
+    val data1 = NativeVector.vectorData(COLUMNS)
+    val data2 = NativeVector.vectorData(COLUMNS)
+    val v1 = Vector.of(data1)
+    val v2 = Vector.of(data2)
+    v1 *= v2
 
-    val result = a :* b
-    val nativeResult = nativeA :* nativeB
-
-    val maxError = compare(result.values(), nativeResult.data)
+    val maxError = compare(v1.values(), data1.zip(data2).map(v => v._1 * v._2))
     assert(maxError === 0.0f)
-  }
-
-  test ("vector :* vector, result") {
-    testWithResultVV_V[Float, Float](vector(ROWS), vector(ROWS), _ :* _, _ :* (_, _))
   }
 
   test("vector / scalar") {
@@ -441,12 +661,74 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test ("vector / scalar, result") {
-    testWithResultVS_V(vector(ROWS), Math.random().toFloat, _ / _, _ / (_, _))
+    testWithResultVS_V(vector(ROWS), java.lang.Math.random().toFloat, _ / _, _ / (_, _))
+  }
+
+  test ("vector /= scalar") {
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toByte)
+      val scalar = 11.toByte
+      val v1 = Vector.of(data1)
+      v1 /= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => (v / scalar).toByte))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toShort)
+      val scalar = 11.toShort
+      val v1 = Vector.of(data1)
+      v1 /= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => (v / scalar).toShort))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toInt)
+      val scalar = 11
+      val v1 = Vector.of(data1)
+      v1 /= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v / scalar))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toLong)
+      val scalar = 11.toLong
+      val v1 = Vector.of(data1)
+      v1 /= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v / scalar))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS)
+      val scalar = 11.2f
+      val v1 = Vector.of(data1)
+      v1 /= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v / scalar))
+      assert(maxError === 0.0f)
+    }
+
+    {
+      val data1 = NativeVector.vectorData(COLUMNS).map(_.toDouble)
+      val scalar = 11.2
+      val v1 = Vector.of(data1)
+      v1 /= scalar
+
+      val maxError = compare(v1.values(), data1.map(v => v / scalar))
+      assert(maxError === 0.0f)
+    }
   }
 
   test("scalar / vector") {
     {
-      val data = NativeVector.vectorData(ROWS).map(Math.max(_, 1).toByte)
+      val data = NativeVector.vectorData(ROWS).map(java.lang.Math.max(_, 1).toByte)
       val nativeA = NativeVector(data.map(_.toFloat))
       val a = Vector.of(data)
       val scalar = 11.toByte
@@ -459,7 +741,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
     }
 
     {
-      val data = NativeVector.vectorData(ROWS).map(Math.max(_, 1).toShort)
+      val data = NativeVector.vectorData(ROWS).map(java.lang.Math.max(_, 1).toShort)
       val nativeA = NativeVector(data.map(_.toFloat))
       val a = Vector.of(data)
       val scalar = 11.toShort
@@ -472,7 +754,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
     }
 
     {
-      val data = NativeVector.vectorData(ROWS).map(Math.max(_, 1).toInt)
+      val data = NativeVector.vectorData(ROWS).map(java.lang.Math.max(_, 1).toInt)
       val nativeA = NativeVector(data.map(_.toFloat))
       val a = Vector.of(data)
       val scalar = 11
@@ -485,7 +767,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
     }
 
     {
-      val data = NativeVector.vectorData(ROWS).map(Math.max(_, 1).toLong)
+      val data = NativeVector.vectorData(ROWS).map(java.lang.Math.max(_, 1).toLong)
       val nativeA = NativeVector(data.map(_.toFloat))
       val a = Vector.of(data)
       val scalar = 11l
@@ -498,7 +780,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
     }
 
     {
-      val data = NativeVector.vectorData(ROWS).map(Math.max(_, 1))
+      val data = NativeVector.vectorData(ROWS).map(java.lang.Math.max(_, 1))
       val nativeA = NativeVector(data)
       val a = Vector.of(data)
       val scalar = 11.2f
@@ -511,7 +793,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
     }
 
     {
-      val data = NativeVector.vectorData(ROWS).map(Math.max(_, 1).toDouble)
+      val data = NativeVector.vectorData(ROWS).map(java.lang.Math.max(_, 1).toDouble)
       val nativeA = NativeVector(data.map(_.toFloat))
       val a = Vector.of(data)
       val scalar = 11.2
@@ -525,45 +807,56 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test ("scalar / vector, result") {
-    testWithResultVS_V(vector(ROWS), Math.random().toFloat, (v: Vector[Float], s: Float) => s / v, (v: Vector[Float], s: Float, r: Vector[Float]) => s / (v, r))
+    testWithResultVS_V(vector(ROWS), java.lang.Math.random().toFloat, (v: Vector[Float], s: Float) => s / v, (v: Vector[Float], s: Float, r: Vector[Float]) => s / (v, r))
   }
 
-  test("vector :/ vector") {
+  test("vector / vector") {
     val nativeA = NativeVector.vector(ROWS)
     val nativeB = NativeVector.vector(ROWS)
     val a = Vector.of(nativeA.data)
     val b = Vector.of(nativeB.data)
 
-    val result = a :/ b
-    val nativeResult = nativeA :/ nativeB
+    val result = a / b
+    val nativeResult = nativeA / nativeB
 
     val maxError = compare(result.values(), nativeResult.data)
     assert(maxError === 0.0f)
   }
 
-  test ("vector :/ vector, result") {
-    testWithResultVV_V[Float, Float](vector(ROWS), vector(ROWS), _ :/ _, _ :/ (_, _))
+  test ("vector / vector, result") {
+    testWithResultVV_V[Float, Float](vector(ROWS), vector(ROWS), _ / _, _ / (_, _))
   }
 
-  test("vector ^ pow") {
+  test ("vector /= vector") {
+    val data1 = NativeVector.vectorData(COLUMNS)
+    val data2 = NativeVector.vectorData(COLUMNS)
+    val v1 = Vector.of(data1)
+    val v2 = Vector.of(data2)
+    v1 /= v2
+
+    val maxError = compare(v1.values(), data1.zip(data2).map(v => v._1 / v._2))
+    assert(maxError === 0.0f)
+  }
+
+  test("vector *^ pow") {
     {
       val data = NativeVector.vectorData(ROWS).map(_.toByte)
       val nativeA = NativeVector(data.map(_.toFloat))
       val a = Vector.of(data)
 
-      val result1 = a ^ 0.5f
+      val result1 = a *^ 0.5f
       val nativeResult1 = nativeA ^ 0.5f
 
       val maxError1 = compare(result1.values(), nativeResult1.data)
       assert(maxError1 < 0.0001)
 
-      val result2 = a ^ 2
+      val result2 = a *^ 2
       val nativeResult2 = nativeA ^ 2
 
       val maxError2 = compare(result2.values(), nativeResult2.data)
       assert(maxError2 < 0.0001)
 
-      val result3 = a ^ 3
+      val result3 = a *^ 3
       val nativeResult3 = nativeA ^ 3
 
 //      val error = errors(Array(result3.values().map(_.toFloat)), Array(nativeResult3.data)).filter(_._1 >= 0.0001).head
@@ -576,19 +869,19 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
       val nativeA = NativeVector(data.map(_.toFloat))
       val a = Vector.of(data)
 
-      val result1 = a ^ 0.5f
+      val result1 = a *^ 0.5f
       val nativeResult1 = nativeA ^ 0.5f
 
       val maxError1 = compare(result1.values(), nativeResult1.data)
       assert(maxError1 < 0.0001)
 
-      val result2 = a ^ 2
+      val result2 = a *^ 2
       val nativeResult2 = nativeA ^ 2
 
       val maxError2 = compare(result2.values(), nativeResult2.data)
       assert(maxError2 < 0.0001)
 
-      val result3 = a ^ 3
+      val result3 = a *^ 3
       val nativeResult3 = nativeA ^ 3
 
       val maxError3 = compare(result3.values(), nativeResult3.data)
@@ -599,19 +892,19 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
       val nativeA = NativeVector(data.map(_.toFloat))
       val a = Vector.of(data)
 
-      val result1 = a ^ 0.5f
+      val result1 = a *^ 0.5f
       val nativeResult1 = nativeA ^ 0.5f
 
       val maxError1 = compare(result1.values(), nativeResult1.data)
       assert(maxError1 < 0.0001)
 
-      val result2 = a ^ 2
+      val result2 = a *^ 2
       val nativeResult2 = nativeA ^ 2
 
       val maxError2 = compare(result2.values(), nativeResult2.data)
       assert(maxError2 < 0.0001)
 
-      val result3 = a ^ 3
+      val result3 = a *^ 3
       val nativeResult3 = nativeA ^ 3
 
       val maxError3 = compare(result3.values(), nativeResult3.data)
@@ -622,19 +915,19 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
       val nativeA = NativeVector(data.map(_.toFloat))
       val a = Vector.of(data)
 
-      val result1 = a ^ 0.5f
+      val result1 = a *^ 0.5f
       val nativeResult1 = nativeA ^ 0.5f
 
       val maxError1 = compare(result1.values(), nativeResult1.data)
       assert(maxError1 < 0.0001)
 
-      val result2 = a ^ 2
+      val result2 = a *^ 2
       val nativeResult2 = nativeA ^ 2
 
       val maxError2 = compare(result2.values(), nativeResult2.data)
       assert(maxError2 < 0.0001)
 
-      val result3 = a ^ 3
+      val result3 = a *^ 3
       val nativeResult3 = nativeA ^ 3
 
       val maxError3 = compare(result3.values(), nativeResult3.data)
@@ -645,19 +938,19 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
       val nativeA = NativeVector(data)
       val a = Vector.of(data)
 
-      val result1 = a ^ 0.5f
+      val result1 = a *^ 0.5f
       val nativeResult1 = nativeA ^ 0.5f
 
       val maxError1 = compare(result1.values(), nativeResult1.data)
       assert(maxError1 < 0.0001)
 
-      val result2 = a ^ 2
+      val result2 = a *^ 2
       val nativeResult2 = nativeA ^ 2
 
       val maxError2 = compare(result2.values(), nativeResult2.data)
       assert(maxError2 < 0.0001)
 
-      val result3 = a ^ 3
+      val result3 = a *^ 3
       val nativeResult3 = nativeA ^ 3
 
       val maxError3 = compare(result3.values(), nativeResult3.data)
@@ -668,19 +961,19 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
       val nativeA = NativeVector(data.map(_.toFloat))
       val a = Vector.of(data)
 
-      val result1 = a ^ 0.5f
+      val result1 = a *^ 0.5f
       val nativeResult1 = nativeA ^ 0.5f
 
       val maxError1 = compare(result1.values(), nativeResult1.data)
       assert(maxError1 < 0.0001)
 
-      val result2 = a ^ 2
+      val result2 = a *^ 2
       val nativeResult2 = nativeA ^ 2
 
       val maxError2 = compare(result2.values(), nativeResult2.data)
       assert(maxError2 < 0.0001)
 
-      val result3 = a ^ 3
+      val result3 = a *^ 3
       val nativeResult3 = nativeA ^ 3
 
       val maxError3 = compare(result3.values(), nativeResult3.data)
@@ -703,7 +996,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test("row + matrix, result") {
-    testWithResultVM_M(vector(COLUMNS), matrix(ROWS, COLUMNS), _ + _, _ + (_, _))
+    testWithResultVM_M[Float, Float](vector(COLUMNS), matrix(ROWS, COLUMNS), _ + _, _ + (_, _))
   }
 
   test("column +| matrix") {
@@ -721,7 +1014,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test("column +| matrix, result") {
-    testWithResultVM_M(vector(ROWS), matrix(ROWS, COLUMNS), _ +| _, _ +| (_, _))
+    testWithResultVM_M[Float, Float](vector(ROWS), matrix(ROWS, COLUMNS), _ +| _, _ +| (_, _))
   }
 
   test("row - matrix") {
@@ -739,7 +1032,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test("row - matrix, result") {
-    testWithResultVM_M(vector(COLUMNS), matrix(ROWS, COLUMNS), _ - _, _ - (_, _))
+    testWithResultVM_M[Float, Float](vector(COLUMNS), matrix(ROWS, COLUMNS), _ - _, _ - (_, _))
   }
 
   test("column -| matrix") {
@@ -757,13 +1050,85 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test("column -| matrix, result") {
-    testWithResultVM_M(vector(ROWS), matrix(ROWS, COLUMNS), _ -| _, _ -| (_, _))
+    testWithResultVM_M[Float, Float](vector(ROWS), matrix(ROWS, COLUMNS), _ -| _, _ -| (_, _))
+  }
+
+  test("row * matrix") {
+    val nativeA = NativeVector.vector(COLUMNS)
+    val nativeB = NativeMatrix.matrix(ROWS, COLUMNS)
+    val a = Vector.of(nativeA.data)
+    val b = Matrix.of(nativeB.data)
+
+    val result = a * b
+    val nativeResult = nativeA * nativeB
+
+    val maxError = compare(result.values(), nativeResult.data)
+    assert(maxError < 0.0001)
+    println(s"$maxError")
+  }
+
+  test("row * matrix, result") {
+    testWithResultVM_M[Float, Float](vector(COLUMNS), matrix(ROWS, COLUMNS), _ * _, _ * (_, _))
+  }
+
+  test("column *| matrix") {
+    val nativeA = NativeVector.vector(ROWS)
+    val nativeB = NativeMatrix.matrix(ROWS, COLUMNS)
+    val a = Vector.of(nativeA.data)
+    val b = Matrix.of(nativeB.data)
+
+    val result = a *| b
+    val nativeResult = nativeA *| nativeB
+
+    val maxError = compare(result.values(), nativeResult.data)
+    assert(maxError < 0.0001)
+    println(s"$maxError")
+  }
+
+  test("column *| matrix, result") {
+    testWithResultVM_M[Float, Float](vector(ROWS), matrix(ROWS, COLUMNS), _ *| _, _ *| (_, _))
+  }
+
+  test("row / matrix") {
+    val nativeA = NativeVector.vector(COLUMNS)
+    val nativeB = NativeMatrix.matrix(ROWS, COLUMNS)
+    val a = Vector.of(nativeA.data)
+    val b = Matrix.of(nativeB.data)
+
+    val result = a / b
+    val nativeResult = nativeA / nativeB
+
+    val maxError = compare(result.values(), nativeResult.data)
+    assert(maxError < 0.0001)
+    println(s"$maxError")
+  }
+
+  test("row / matrix, result") {
+    testWithResultVM_M[Float, Float](vector(COLUMNS), matrix(ROWS, COLUMNS), _ / _, _ / (_, _))
+  }
+
+  test("column /| matrix") {
+    val nativeA = NativeVector.vector(ROWS)
+    val nativeB = NativeMatrix.matrix(ROWS, COLUMNS)
+    val a = Vector.of(nativeA.data)
+    val b = Matrix.of(nativeB.data)
+
+    val result = a /| b
+    val nativeResult = nativeA /| nativeB
+
+    val maxError = compare(result.values(), nativeResult.data)
+    assert(maxError < 0.0001)
+    println(s"$maxError")
+  }
+
+  test("column /| matrix, result") {
+    testWithResultVM_M[Float, Float](vector(ROWS), matrix(ROWS, COLUMNS), _ /| _, _ /| (_, _))
   }
 
   test("vector(i)") {
     val data = NativeVector.vectorData(ROWS)
     val a = Vector.of(data)
-    val index = (Math.random() * ROWS).toInt
+    val index = (java.lang.Math.random() * ROWS).toInt
     val value = a(index)
     assert(value.value() === data(index))
   }
@@ -771,10 +1136,10 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   test("vector(from, to)") {
     val data = NativeVector.vectorData(ROWS)
     val a = Vector.of(data)
-    val index1 = Math.random() * ROWS
-    val index2 = Math.random() * ROWS
-    val from = Math.min(index1, index2).toInt
-    val to = Math.max(index1, index2).toInt
+    val index1 = java.lang.Math.random() * ROWS
+    val index2 = java.lang.Math.random() * ROWS
+    val from = java.lang.Math.min(index1, index2).toInt
+    val to = java.lang.Math.max(index1, index2).toInt
 
     def check(vector: Vector[Float], data: Array[Float]): Unit = {
       val maxError = compare(vector.values(), data)
@@ -793,8 +1158,8 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   test("vector(i) = value") {
     val data = NativeVector.vectorData(ROWS)
     val a = Vector.of(data)
-    val value = Math.random().toFloat
-    val index = (Math.random() * a.length).toInt
+    val value = java.lang.Math.random().toFloat
+    val index = (java.lang.Math.random() * a.length).toInt
     a(index) = value
     assert(a(index).value() === value)
   }
@@ -822,10 +1187,10 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   test("vector.slice(from, to)") {
     val data = NativeVector.vectorData(ROWS)
     val a = Vector.of(data)
-    val index1 = Math.random() * ROWS
-    val index2 = Math.random() * ROWS
-    val from = Math.min(index1, index2).toInt
-    val to = Math.max(index1, index2).toInt
+    val index1 = java.lang.Math.random() * ROWS
+    val index2 = java.lang.Math.random() * ROWS
+    val from = java.lang.Math.min(index1, index2).toInt
+    val to = java.lang.Math.max(index1, index2).toInt
 
     def check(vector: Vector[Float], data: Array[Float]): Unit = {
       val maxError = compare(vector.values(), data)
@@ -838,10 +1203,10 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
   }
 
   test("vector.slice(from, to, result)") {
-    val index1 = Math.random() * ROWS
-    val index2 = Math.random() * ROWS
-    val from = Math.min(index1, index2).toInt
-    val to = Math.max(index1, index2).toInt
+    val index1 = java.lang.Math.random() * ROWS
+    val index2 = java.lang.Math.random() * ROWS
+    val from = java.lang.Math.min(index1, index2).toInt
+    val to = java.lang.Math.max(index1, index2).toInt
     testWithResultVSS_V(vector(ROWS), from, to, _.slice(_, _), _.slice(_, _, _))
   }
 
@@ -857,7 +1222,7 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
     def indices(length: Int): Array[Int] = {
       val indices = Array.ofDim[Int](length)
       for (i <- indices.indices) {
-        indices(i) = (Math.random() * ROWS).toInt
+        indices(i) = (java.lang.Math.random() * ROWS).toInt
       }
       indices
     }
@@ -875,11 +1240,11 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
     check(data, ROWS * 2)
   }
 
-  test("vector.values(indices, result)") {
+  test("vector.values(indices: Vector[Int], result)") {
     def indices(length: Int): Array[Int] = {
       val indices = Array.ofDim[Int](length)
       for (i <- indices.indices) {
-        indices(i) = (Math.random() * ROWS).toInt
+        indices(i) = (java.lang.Math.random() * ROWS).toInt
       }
       indices
     }
@@ -887,5 +1252,84 @@ class TestVector extends FunSuite with TestUtils with TestWithResult {
     testWithResultVV_V[Float, Int](vector(ROWS), Vector.of(indices(ROWS / 2)), _.values(_), _.values(_, _))
     testWithResultVV_V[Float, Int](vector(ROWS), Vector.of(indices(ROWS * 2)), _.values(_), _.values(_, _))
   }
+
+  test("vector.values(indices: Matrix[Int], result)") {
+    def indices(rows: Int, columns: Int): Array[Array[Int]] = {
+      val indices = (for (i <- 0 to rows) yield {
+        val row = Array.ofDim[Int](columns)
+        for (i <- row.indices) {
+          row(i) = (java.lang.Math.random() * COLUMNS).toInt
+        }
+        row
+      }).toArray
+      indices
+    }
+
+    {
+      val data = NativeVector.vectorData(COLUMNS)
+      val idxs = indices(ROWS, COLUMNS)
+      val result = Vector.of(data).values(Matrix.of(idxs))
+
+      val nativeResult = (for (i <- idxs.indices) yield {
+        idxs(i).map(data(_))
+      }).toArray
+
+      val maxError = compare(result.values(), nativeResult)
+      assert(maxError === 0)
+    }
+
+    testWithResultVM_M[Float, Int](vector(COLUMNS), Matrix.of(indices(ROWS, COLUMNS)), _.values(_), _.values(_, _))
+    testWithResultVM_M[Float, Int](vector(COLUMNS), Matrix.of(indices(ROWS / 2 + 1, COLUMNS)), _.values(_), _.values(_, _))
+    testWithResultVM_M[Float, Int](vector(COLUMNS), Matrix.of(indices(ROWS * 2 + 1, COLUMNS)), _.values(_), _.values(_, _))
+  }
+
+  test("vector.reverse()") {
+    def test(length: Int): Unit = {
+      val data = NativeVector.vectorData(length)
+      val vector = Vector.of(data)
+      val result = vector.reverse()
+
+      val maxError = compare(result.values(), data.reverse)
+      assert(maxError === 0)
+    }
+
+    test(4)
+    test(5)
+    test(COLUMNS)
+    test(Reverse.TILE_DIM)
+    test(Reverse.TILE_DIM + 1)
+    test(Reverse.TILE_DIM + Reverse.TILE_DIM / 2)
+    test(Reverse.TILE_DIM + Reverse.TILE_DIM)
+    test(Reverse.TILE_DIM * 2 + Reverse.TILE_DIM / 2)
+    test(Reverse.TILE_DIM * 4 + Reverse.TILE_DIM / 2 + 1)
+  }
+
+  test("vector.reverse(result)") {
+    testWithResultV_Vf(vector(COLUMNS), _.reverse(), _.reverse(_))
+  }
+
+//  test("perf") {
+//    println(JCudaKernel.numberOfSMs)
+//
+//    val data = NativeVector.vectorData(COLUMNS * 10000)
+//    val vector = Vector.of(data)
+//    val reversed = new Vector[Float](vector.length)
+//
+//    val t1 = System.currentTimeMillis()
+//    for (i <- 0 to 10000) {
+//      vector.reverse(reversed)
+//    }
+//    val t2 = System.currentTimeMillis()
+//    println(s"reverse time: ${t2 - t1}")
+//
+//    val copy = new Vector[Float](vector.length)
+//
+//    val t3 = System.currentTimeMillis()
+//    for (i <- 0 to 10000) {
+//      copy.update(vector)
+//    }
+//    val t4 = System.currentTimeMillis()
+//    println(s"copy time: ${t4 - t3}")
+//  }
 
 }

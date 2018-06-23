@@ -11,13 +11,9 @@ import ru.albemuth.tentura.tensor.kernel.vector.VectorKernel.TILE_DIM
 class GetColumnsValues(override val moduleName: String, override val classifier: String, override val functionName: String) extends VectorKernel(moduleName, classifier, functionName) with Template[GetColumnsValues] {
 
   def this() {
-    this("ru/albemuth/tentura/tensor/kernel/matrix/MatrixColumnsValues", KernelRegistry.classifier(classOf[GetColumnsValues]), "getMatrixColumnsValues")
+    this("ru/albemuth/tentura/tensor/kernel/matrix/ColumnsValues", KernelRegistry.classifier(classOf[GetColumnsValues]), "getColumnsValues")
   }
 
   def materialize(functionImplName: String): GetColumnsValues = new GetColumnsValues(moduleName, classifier, functionImplName)
-
-  override def blockSize(c: Vector[_]): (Int, Int, Int) = (1, TILE_DIM, 1)
-
-  override def gridSize(c: Vector[_]): (Int, Int, Int) = (1, (c.length - 1) / TILE_DIM + 1, 1)
 
 }

@@ -20,7 +20,7 @@ object MeasureMultiplicationWihScalameter extends App with MatrixUtils {
   implicit val c = new Matrix[Float](a.rows, b.columns)
 
   val multiplyTime = standardConfig measure {
-    val result = a * b
+    val result = a *** b
   }
 
   println(s"Time: $multiplyTime")
