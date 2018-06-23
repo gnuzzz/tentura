@@ -168,7 +168,7 @@ trait TestWithResult extends Assertions with TestUtils {
     }
   }
 
-  def testWithResultVM_M(v1: Vector[Float], m2: Matrix[Float], op: (Vector[Float], Matrix[Float]) => Matrix[Float], op_r: (Vector[Float], Matrix[Float], Matrix[Float]) => Matrix[Float]): Unit = {
+  def testWithResultVM_M[V: ClassTag, M: ClassTag](v1: Vector[V], m2: Matrix[M], op: (Vector[V], Matrix[M]) => Matrix[Float], op_r: (Vector[V], Matrix[M], Matrix[Float]) => Matrix[Float]): Unit = {
     val (rows, columns) = {
       val r1 = op(v1, m2)
       val r2 = new Matrix[Float](r1.rows, r1.columns)
@@ -506,7 +506,7 @@ trait TestWithResult extends Assertions with TestUtils {
     }
   }
 
-  def testWithResultMV_M(m1: Matrix[Float], v2: Vector[Float], op: (Matrix[Float], Vector[Float]) => Matrix[Float], op_r: (Matrix[Float], Vector[Float], Matrix[Float]) => Matrix[Float]): Unit = {
+  def testWithResultMV_M[M: ClassTag, V: ClassTag](m1: Matrix[M], v2: Vector[V], op: (Matrix[M], Vector[V]) => Matrix[Float], op_r: (Matrix[M], Vector[V], Matrix[Float]) => Matrix[Float]): Unit = {
     val (rows, columns) = {
       val r1 = op(m1, v2)
       val r2 = new Matrix[Float](r1.rows, r1.columns)

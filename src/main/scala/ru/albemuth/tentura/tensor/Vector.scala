@@ -47,13 +47,17 @@ class Vector[T: ClassTag](override val deviceDataPtr: CUdeviceptr, val length: I
   }
 
   def slice(from: Int, to: Int): Vector[T] = {
-    val r = this.result(vectorSlice, (from, to), new Vector[T](to - from))
+    val r = this.result(Vector.slice, (from, to), new Vector[T](to - from))
     r.copy(this, from, 0, to - from)
     r
   }
 
   def slice(from: Int, to: Int, result: Vector[T]): Vector[T] = {
-    VectorKernel.vector_r(vectorSlice, this, from, to, result)
+    VectorKernel.vector_r(Vector.slice, this, from, to, result)
+  }
+
+  def concat(vector: Vector[T]): Vector[T] = {
+    ??? //todo
   }
 
   def values(): Array[T] = {
@@ -62,28 +66,36 @@ class Vector[T: ClassTag](override val deviceDataPtr: CUdeviceptr, val length: I
     data
   }
 
-  def values(indicies: Vector[Int]): Vector[T] = {
-    VectorKernel.vector2(vectorValues, this, indicies, new Vector[T](indicies.length))
+  def values(indices: Vector[Int]): Vector[T] = {
+    VectorKernel.vector2(Vector.values, this, indices, new Vector[T](indices.length))
   }
 
-  def values(indicies: Vector[Int], result: Vector[T]): Vector[T] = {
-    VectorKernel.vector2_r(vectorValues, this, indicies, result)
+  def values(indices: Vector[Int], result: Vector[T]): Vector[T] = {
+    VectorKernel.vector2_r(Vector.values, this, indices, result)
+  }
+
+  def values(indices: Matrix[Int]): Matrix[T] = {
+    MatrixKernel.matrix2(vectorValuesMatrix, this, indices, new Matrix[T](indices.rows, indices.columns))
+  }
+
+  def values(indices: Matrix[Int], result: Matrix[T]): Matrix[T] = {
+    MatrixKernel.matrix2_r(vectorValuesMatrix, this, indices, result)
   }
 
   def +(matrix: Matrix[T]): Matrix[T] = {
-    MatrixKernel.matrix(vectorRowAddMatrix, this, matrix, new Matrix[T](matrix.rows, matrix.columns))
+    MatrixKernel.matrix(rowAddMatrix, this, matrix, new Matrix[T](matrix.rows, matrix.columns))
   }
 
   def +(matrix: Matrix[T], result: Matrix[T]): Matrix[T] = {
-    MatrixKernel.matrix_r(vectorRowAddMatrix, this, matrix, result)
+    MatrixKernel.matrix_r(rowAddMatrix, this, matrix, result)
   }
 
   def +|(matrix: Matrix[T]): Matrix[T] = {
-    MatrixKernel.matrix(vectorColumnAddMatrix, this, matrix, new Matrix[T](matrix.rows, matrix.columns))
+    MatrixKernel.matrix(columnAddMatrix, this, matrix, new Matrix[T](matrix.rows, matrix.columns))
   }
 
   def +|(matrix: Matrix[T], result: Matrix[T]): Matrix[T] = {
-    MatrixKernel.matrix_r(vectorColumnAddMatrix, this, matrix, result)
+    MatrixKernel.matrix_r(columnAddMatrix, this, matrix, result)
   }
 
   def +(vector: Vector[T]): Vector[T] = {
@@ -143,19 +155,19 @@ class Vector[T: ClassTag](override val deviceDataPtr: CUdeviceptr, val length: I
   }
 
   def -(matrix: Matrix[T]): Matrix[T] = {
-    MatrixKernel.matrix(vectorRowSubMatrix, this, matrix, new Matrix[T](matrix.rows, matrix.columns))
+    MatrixKernel.matrix(rowSubMatrix, this, matrix, new Matrix[T](matrix.rows, matrix.columns))
   }
 
   def -(matrix: Matrix[T], result: Matrix[T]): Matrix[T] = {
-    MatrixKernel.matrix_r(vectorRowSubMatrix, this, matrix, result)
+    MatrixKernel.matrix_r(rowSubMatrix, this, matrix, result)
   }
 
   def -|(matrix: Matrix[T]): Matrix[T] = {
-    MatrixKernel.matrix(vectorColumnSubMatrix, this, matrix, new Matrix[T](matrix.rows, matrix.columns))
+    MatrixKernel.matrix(columnSubMatrix, this, matrix, new Matrix[T](matrix.rows, matrix.columns))
   }
 
   def -|(matrix: Matrix[T], result: Matrix[T]): Matrix[T] = {
-    MatrixKernel.matrix_r(vectorColumnSubMatrix, this, matrix, result)
+    MatrixKernel.matrix_r(columnSubMatrix, this, matrix, result)
   }
 
   def -(vector: Vector[T]): Vector[T] = {
@@ -215,59 +227,59 @@ class Vector[T: ClassTag](override val deviceDataPtr: CUdeviceptr, val length: I
   }
 
   def *(scalar: Byte): Vector[T] = {
-    VectorKernel.vector(vectorMulScalar, this, scalar, new Vector[T](length))
+    VectorKernel.vector(vectorTimesScalar, this, scalar, new Vector[T](length))
   }
 
   def *(scalar: Byte, result: Vector[T]): Vector[T] = {
-    VectorKernel.vector_r(vectorMulScalar, this, scalar, result)
+    VectorKernel.vector_r(vectorTimesScalar, this, scalar, result)
   }
 
   def *(scalar: Short): Vector[T] = {
-    VectorKernel.vector(vectorMulScalar, this, scalar, new Vector[T](length))
+    VectorKernel.vector(vectorTimesScalar, this, scalar, new Vector[T](length))
   }
 
   def *(scalar: Short, result: Vector[T]): Vector[T] = {
-    VectorKernel.vector_r(vectorMulScalar, this, scalar, result)
+    VectorKernel.vector_r(vectorTimesScalar, this, scalar, result)
   }
 
   def *(scalar: Int): Vector[T] = {
-    VectorKernel.vector(vectorMulScalar, this, scalar, new Vector[T](length))
+    VectorKernel.vector(vectorTimesScalar, this, scalar, new Vector[T](length))
   }
 
   def *(scalar: Int, result: Vector[T]): Vector[T] = {
-    VectorKernel.vector_r(vectorMulScalar, this, scalar, result)
+    VectorKernel.vector_r(vectorTimesScalar, this, scalar, result)
   }
 
   def *(scalar: Long): Vector[T] = {
-    VectorKernel.vector(vectorMulScalar, this, scalar, new Vector[T](length))
+    VectorKernel.vector(vectorTimesScalar, this, scalar, new Vector[T](length))
   }
 
   def *(scalar: Long, result: Vector[T]): Vector[T] = {
-    VectorKernel.vector_r(vectorMulScalar, this, scalar, result)
+    VectorKernel.vector_r(vectorTimesScalar, this, scalar, result)
   }
 
   def *(scalar: Float): Vector[T] = {
-    VectorKernel.vector(vectorMulScalar, this, scalar, new Vector[T](length))
+    VectorKernel.vector(vectorTimesScalar, this, scalar, new Vector[T](length))
   }
 
   def *(scalar: Float, result: Vector[T]): Vector[T] = {
-    VectorKernel.vector_r(vectorMulScalar, this, scalar, result)
+    VectorKernel.vector_r(vectorTimesScalar, this, scalar, result)
   }
 
   def *(scalar: Double): Vector[T] = {
-    VectorKernel.vector(vectorMulScalar, this, scalar, new Vector[T](length))
+    VectorKernel.vector(vectorTimesScalar, this, scalar, new Vector[T](length))
   }
 
   def *(scalar: Double, result: Vector[T]): Vector[T] = {
-    VectorKernel.vector_r(vectorMulScalar, this, scalar, result)
+    VectorKernel.vector_r(vectorTimesScalar, this, scalar, result)
   }
 
   def *(vector: Vector[T]): Scalar[T] = {
-    ScalarKernel.scalar(vectorMulVector, this, vector, new Scalar[T]())
+    ScalarKernel.scalar(vectorDotVector, this, vector, new Scalar[T]())
   }
 
   def *(vector: Vector[T], result: Scalar[T]): Scalar[T] = {
-    ScalarKernel.scalar_r(vectorMulVector, this, vector, result)
+    ScalarKernel.scalar_r(vectorDotVector, this, vector, result)
   }
 
   def *(matrix: Matrix[T]): Vector[T] = {
@@ -279,19 +291,19 @@ class Vector[T: ClassTag](override val deviceDataPtr: CUdeviceptr, val length: I
   }
 
   def |*(vector: Vector[T]): Matrix[T] = {
-    MatrixKernel.matrix(vectorMatrixMulVector, this, vector, new Matrix[T](length, vector.length))
+    MatrixKernel.matrix(columnDotRow, this, vector, new Matrix[T](length, vector.length))
   }
 
   def |*(vector: Vector[T], result: Matrix[T]): Matrix[T] = {
-    MatrixKernel.matrix_r(vectorMatrixMulVector, this, vector, result)
+    MatrixKernel.matrix_r(columnDotRow, this, vector, result)
   }
 
   def :*(vector: Vector[T]): Vector[T] = {
-    VectorKernel.vector(vectorElementWiseMulVector, this, vector, new Vector[T](length))
+    VectorKernel.vector(vectorTimesVector, this, vector, new Vector[T](length))
   }
 
   def :*(vector: Vector[T], result: Vector[T]): Vector[T] = {
-    VectorKernel.vector_r(vectorElementWiseMulVector, this, vector, result)
+    VectorKernel.vector_r(vectorTimesVector, this, vector, result)
   }
 
   def /(scalar: Byte): Vector[T] = {
@@ -343,11 +355,11 @@ class Vector[T: ClassTag](override val deviceDataPtr: CUdeviceptr, val length: I
   }
 
   def :/(vector: Vector[T]): Vector[T] = {
-    VectorKernel.vector(vectorElementWiseDivVector, this, vector, new Vector[T](length))
+    VectorKernel.vector(vectorDivVector, this, vector, new Vector[T](length))
   }
 
   def :/(vector: Vector[T], result: Vector[T]): Vector[T] = {
-    VectorKernel.vector_r(vectorElementWiseDivVector, this, vector, result)
+    VectorKernel.vector_r(vectorDivVector, this, vector, result)
   }
 
   def ^(power: Float): Vector[Float] = {
@@ -386,6 +398,18 @@ class Vector[T: ClassTag](override val deviceDataPtr: CUdeviceptr, val length: I
     VectorFunctions.argmin(this)
   }
 
+  def indices(): Vector[Int] = {
+    VectorKernel.vector(Vector.indices, this, new Vector[Int](length))
+  }
+
+  def reverse(): Vector[T] = {
+    VectorKernel.vector(Vector.reverse, this, new Vector[T](length))
+  }
+
+  def reverse(result: Vector[T]): Vector[T] = {
+    VectorKernel.vector_r(Vector.reverse, this, result)
+  }
+
 }
 
 object Vector {
@@ -394,21 +418,24 @@ object Vector {
   lazy val vectorAddScalar = new KernelTemplate(new VectorAddScalar)
   lazy val vectorSubVector = new KernelTemplate(new VectorSubVector)
   lazy val vectorSubScalar = new KernelTemplate(new VectorSubScalar)
-  lazy val vectorMulScalar = new KernelTemplate(new VectorMulScalar)
-  lazy val vectorMulVector = new KernelTemplate(new VectorTimesVector)
+  lazy val vectorTimesScalar = new KernelTemplate(new VectorTimesScalar)
+  lazy val vectorDotVector = new KernelTemplate(new VectorDotVector)
   lazy val vectorMulMatrix = new KernelTemplate(new VectorTimesMatrix)
-  lazy val vectorMatrixMulVector = new KernelTemplate(new VectorMatrixMulVector)
-  lazy val vectorElementWiseDivVector = new KernelTemplate(new VectorElementWiseDivVector)
-  lazy val vectorElementWiseMulVector = new KernelTemplate(new VectorElementWiseMulVector)
+  lazy val columnDotRow = new KernelTemplate(new ColumnDotRow)
+  lazy val vectorDivVector = new KernelTemplate(new VectorDivVector)
+  lazy val vectorTimesVector = new KernelTemplate(new VectorTimesVector)
   lazy val vectorDivScalar = new KernelTemplate(new VectorDivScalar)
-  lazy val vectorSum = new KernelTemplate(new VectorSum)
-  lazy val vectorRowAddMatrix = new KernelTemplate(new VectorRowAddMatrix)
-  lazy val vectorColumnAddMatrix = new KernelTemplate(new VectorColumnAddMatrix)
-  lazy val vectorRowSubMatrix = new KernelTemplate(new VectorRowSubMatrix)
-  lazy val vectorColumnSubMatrix = new KernelTemplate(new VectorColumnSubMatrix)
+  lazy val sum = new KernelTemplate(new Sum)
+  lazy val rowAddMatrix = new KernelTemplate(new RowAddMatrix)
+  lazy val columnAddMatrix = new KernelTemplate(new ColumnAddMatrix)
+  lazy val rowSubMatrix = new KernelTemplate(new RowSubMatrix)
+  lazy val columnSubMatrix = new KernelTemplate(new ColumnSubMatrix)
   lazy val value = new KernelTemplate(new Value)
-  lazy val vectorSlice = new KernelTemplate(new Slice)
-  lazy val vectorValues = new KernelTemplate(new Values)
+  lazy val slice = new KernelTemplate(new Slice)
+  lazy val values = new KernelTemplate(new Values)
+  lazy val indices = new KernelTemplate(new Indices)
+  lazy val vectorValuesMatrix = new KernelTemplate(new VectorValuesMatrix)
+  lazy val reverse = new KernelTemplate(new Reverse())
 
   def apply[T: ClassTag](length: Int): VectorBuilder[T] = new VectorBuilder[T](length)
 

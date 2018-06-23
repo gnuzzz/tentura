@@ -286,6 +286,14 @@ class NativeMatrix(v: Array[Array[Float]]) {
     result
   }
 
+  def slice(from: Int, to: Int, axis: Int): NativeMatrix = {
+    if (axis == 0) {
+      NativeMatrix(data.slice(from, to))
+    } else {
+      NativeMatrix(data.map(_.slice(from, to)))
+    }
+  }
+
   def sum(): Float = {
     (for (row <- data) yield row.sum).sum
   }
@@ -301,6 +309,46 @@ class NativeMatrix(v: Array[Array[Float]]) {
       NativeVector(resultData)
     } else {
       NativeVector(for (row <- data) yield row.sum)
+    }
+  }
+
+  def max(): Float = {
+    data.map(_.max).max
+  }
+
+  def max(axis: Int): NativeVector = {
+    if (axis == 0) {
+      this.t.max(axis = 1)
+    } else {
+      NativeVector(data.map(_.max))
+    }
+  }
+
+  def min(): Float = {
+    data.map(_.min).min
+  }
+
+  def min(axis: Int): NativeVector = {
+    if (axis == 0) {
+      this.t.min(axis = 1)
+    } else {
+      NativeVector(data.map(_.min))
+    }
+  }
+
+  def argmax(axis: Int): NativeVector = {
+    if (axis == 0) {
+      this.t.argmax(axis = 1)
+    } else {
+      NativeVector(data.map(_.zipWithIndex.maxBy(_._1)._2.toFloat))
+    }
+  }
+
+  def argmin(axis: Int): NativeVector = {
+    if (axis == 0) {
+      this.t.argmin(axis = 1)
+    } else {
+      NativeVector(data.map(_.zipWithIndex.minBy(_._1)._2.toFloat))
     }
   }
 

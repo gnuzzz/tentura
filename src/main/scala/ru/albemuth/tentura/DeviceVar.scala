@@ -14,6 +14,8 @@ abstract class DeviceVar[T: ClassTag] {
   protected val deviceDataPtr: CUdeviceptr
   protected val resultsCache = new ResultsCache
 
+  def itemSizeOf(): Int = sizeOf()
+
   def result[R: ClassTag](function: AnyRef, resultKey: Any, result: => Matrix[R]): Matrix[R] = {
     resultsCache.result[Matrix[R]](function, resultKey, result)
   }
