@@ -1,5 +1,7 @@
 package ru.albemuth.tentura.tensor
 
+import jcuda.Pointer
+import jcuda.jcublas.{JCublas2, cublasHandle, cublasOperation}
 import ru.albemuth.jcuda.jcusegsort.{KeySortContext, KeyValueSortContext, Sorting}
 import ru.albemuth.tentura.kernel.JCudaKernel.datatype
 import ru.albemuth.tentura.kernel.KernelTemplate
@@ -251,6 +253,20 @@ object MatrixFunctions {
     } else {
       MatrixKernel.matrix(matrixBincount, matrix, maxValue, new Matrix[Int](matrix.rows, maxValue + 1))
     }
+  }
+
+  def gemm(alpha: Float, a: Matrix[Float], opA: Int, b: Matrix[Float], opB: Int, beta: Float, c: Matrix[Float])(implicit handle: cublasHandle): Matrix[Float] = {
+    JCublas2.cublasSgemm(
+      handle,
+      opB, opA,
+      if (opB == cublasOperation.CUBLAS_OP_N) b.columns else b.rows,
+      if (opA == cublasOperation.CUBLAS_OP_N) a.rows else a.columns,
+      a.columns, //todo ???
+      Pointer.to(Array[Float](alpha)), b.deviceDataPtr, b.columns,
+      a.deviceDataPtr, a.columns, Pointer.to(Array[Float](beta)),
+      c.deviceDataPtr, c.columns
+    )
+    c
   }
 
   lazy val matrixSum = new KernelTemplate(new MatrixSum)
