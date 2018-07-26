@@ -34,6 +34,95 @@ class TestSimple extends FunSuite {
   test("aaa") {
     val c1 = new C(1)
     println(c1.plus(1).value())
+
+    val m = new Matr
+    val v = new Vect
+    val m1: Matr = m + v
+    val m2: Matr = m + (v, axis = 0)
+    val m3: Matr = v + m
+    val m4: Matr = v + (axis = 0, m)
+    val m5: Matr = m + v.asColumn
+    val m6: Matr = v.asRow + m
+    val s1: Double = v * v
+    val s2: Double = v.asRow * v.asColumn
+    val m7: Matr = v.asColumn * v.asRow
+    val v1 = m * v
+    val v2 = v * m
+  }
+
+}
+
+class Matr {
+
+  def +(m: Matr): Matr = {
+    this
+  }
+
+  def +(v: Vect): Matr = {
+    this
+  }
+
+  def +(v: Vect, axis: Int): Matr = {
+    this
+  }
+
+  def +(t: T1): Matr = {
+    this + (t.vector, axis = t.axis)
+  }
+
+  def *(v: Vect): Vect = {
+    v
+  }
+
+}
+
+class Vect {
+
+  def +(v: Vect): Vect = {
+    this
+  }
+
+  def +(m: Matr): Matr = {
+    m
+  }
+
+  def +(axis: Int, m: Matr): Matr = {
+    m
+  }
+
+  def *(v: Vect): Double = {
+    0
+  }
+
+  def *(m: Matr): Vect = {
+    this
+  }
+
+  def asRow = new Row(this, 0)
+
+  def asColumn = new Column(this, axis = 1)
+
+}
+
+class T1(val vector: Vect, val axis: Int) {
+
+  def +(m: Matr): Matr = {
+    vector + (axis = axis, m)
+  }
+
+}
+
+class Row(override val vector: Vect, override val axis: Int) extends T1(vector, axis) {
+
+  def *(c: Column): Double = {
+    0
+  }
+}
+
+class Column(override val vector: Vect, override val axis: Int) extends T1(vector, axis) {
+
+  def *(r: Row): Matr = {
+    new Matr
   }
 
 }

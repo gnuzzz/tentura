@@ -770,6 +770,30 @@ object MathFunctions {
     MathKernel.vector(logd, vector, base)
   }
 
+  def log[T: ClassTag](vector: Vector[T], base: Vector[Float], result: Vector[Float]): Vector[Float] = {
+    MathKernel.vector_r(logf, vector, base, result)
+  }
+
+//  def log[T: ClassTag](vector: Vector[T], base: Vector[Float]): Vector[Float] = {
+//    MathKernel.vector(logf, vector, base)
+//  }
+
+  def log(vector: Vector[Double], base: Vector[Double], result: Vector[Double]): Vector[Double] = {
+    logd(vector, base, result)
+  }
+
+//  def log(vector: Vector[Double], base: Vector[Double]): Vector[Double] = {
+//    logd(vector, base)
+//  }
+
+  def logd[T: ClassTag](vector: Vector[T], base: Vector[Double], result: Vector[Double]): Vector[Double] = {
+    MathKernel.vector_r(logd, vector, base, result)
+  }
+
+//  def logd[T: ClassTag](vector: Vector[T], base: Vector[Double]): Vector[Double] = {
+//    MathKernel.vector(logd, vector, base)
+//  }
+
   def log[T: ClassTag](matrix: Matrix[T], base: Float, result: Matrix[Float]): Matrix[Float] = {
     MathKernel.matrix_r(logf, matrix, base, result)
   }

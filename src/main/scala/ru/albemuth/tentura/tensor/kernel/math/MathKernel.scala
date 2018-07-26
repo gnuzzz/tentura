@@ -121,7 +121,7 @@ object MathKernel {
     MathKernel.vector_cached(kernel, vector, param, new Vector[R](vector.length))
   }
 
-  def vector_r[T: ClassTag, R: ClassTag](kernel: MathKernel, vector1: Vector[T], vector2: Vector[T], result: Vector[R]): Vector[R] = {
+  def vector_r[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: MathKernel, vector1: Vector[T1], vector2: Vector[T2], result: Vector[R]): Vector[R] = {
     val params = Pointer.to(
       Pointer.to(vector1.deviceDataPtr), Pointer.to(vector2.deviceDataPtr), Pointer.to(result.deviceDataPtr),
       Pointer.to(Array[Int](result.length))
@@ -132,12 +132,12 @@ object MathKernel {
     result
   }
 
-  def vector_cached[T: ClassTag, R: ClassTag](kernel: MathKernel, vector1: Vector[T], vector2: Vector[T], r: => Vector[R]): Vector[R] = {
+  def vector_cached[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: MathKernel, vector1: Vector[T1], vector2: Vector[T2], r: => Vector[R]): Vector[R] = {
     val result = vector1.result(kernel, vector2, r)
     MathKernel.vector_r(kernel, vector1, vector2, result)
   }
 
-  def vector[T: ClassTag, R: ClassTag](kernel: MathKernel, vector1: Vector[T], vector2: Vector[T]): Vector[R] = {
+  def vector[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: MathKernel, vector1: Vector[T1], vector2: Vector[T2]): Vector[R] = {
     MathKernel.vector_cached(kernel, vector1, vector2, new Vector[R](vector1.length))
   }
 
@@ -177,16 +177,16 @@ object MathKernel {
     MathKernel.vector[T, R](template.kernel[T], vector, param)
   }
 
-  def vector_r[T: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], vector1: Vector[T], vector2: Vector[T], result: Vector[R]): Vector[R] = {
-    MathKernel.vector_r[T, R](template.kernel[T], vector1, vector2, result)
+  def vector_r[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], vector1: Vector[T1], vector2: Vector[T2], result: Vector[R]): Vector[R] = {
+    MathKernel.vector_r[T1, T2, R](template.kernel[T1, T2], vector1, vector2, result)
   }
 
-  def vector_cached[T: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], vector1: Vector[T], vector2: Vector[T], r: => Vector[R]): Vector[R] = {
-    MathKernel.vector_cached[T, R](template.kernel[T], vector1, vector2, r)
+  def vector_cached[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], vector1: Vector[T1], vector2: Vector[T2], r: => Vector[R]): Vector[R] = {
+    MathKernel.vector_cached[T1, T2, R](template.kernel[T1, T2], vector1, vector2, r)
   }
 
-  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], vector1: Vector[T], vector2: Vector[T]): Vector[R] = {
-    MathKernel.vector[T, R](template.kernel[T], vector1, vector2)
+  def vector[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], vector1: Vector[T1], vector2: Vector[T2]): Vector[R] = {
+    MathKernel.vector[T1, T2, R](template.kernel[T1, T2], vector1, vector2)
   }
 
   def matrix_r[T: ClassTag, R: ClassTag](kernel: MathKernel, matrix: Matrix[T], result: Matrix[R]): Matrix[R] = {
