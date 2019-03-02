@@ -168,7 +168,7 @@ trait TestWithResult extends Assertions with TestUtils {
     }
   }
 
-  def testWithResultVM_M(v1: Vector[Float], m2: Matrix[Float], op: (Vector[Float], Matrix[Float]) => Matrix[Float], op_r: (Vector[Float], Matrix[Float], Matrix[Float]) => Matrix[Float]): Unit = {
+  def testWithResultVM_M[V: ClassTag, M: ClassTag](v1: Vector[V], m2: Matrix[M], op: (Vector[V], Matrix[M]) => Matrix[Float], op_r: (Vector[V], Matrix[M], Matrix[Float]) => Matrix[Float]): Unit = {
     val (rows, columns) = {
       val r1 = op(v1, m2)
       val r2 = new Matrix[Float](r1.rows, r1.columns)
@@ -279,6 +279,26 @@ trait TestWithResult extends Assertions with TestUtils {
     }
     {
       val r2 = new Vector[Float](length)
+      val r3 = op_r(v1, s2, r2)
+      val r1 = op(v1, s2)
+      assert(r2 === r3)
+      assert(r2 !== r1)
+      assert(compare(r2.values(), r1.values()) === 0)
+    }
+  }
+
+  def testWithResultVS_Vd(v1: Vector[Double], s2: Double, op: (Vector[Double], Double) => Vector[Double], op_r: (Vector[Double], Double, Vector[Double]) => Vector[Double]): Unit = {
+    val length = {
+      val r1 = op(v1, s2)
+      val r2 = new Vector[Double](r1.length)
+      val r3 = op_r(v1, s2, r2)
+      assert(r2 === r3)
+      assert(r2 !== r1)
+      assert(compare(r2.values(), r1.values()) === 0)
+      r1.length
+    }
+    {
+      val r2 = new Vector[Double](length)
       val r3 = op_r(v1, s2, r2)
       val r1 = op(v1, s2)
       assert(r2 === r3)
@@ -427,7 +447,7 @@ trait TestWithResult extends Assertions with TestUtils {
     }
   }
 
-  def testWithResultM_V(m1: Matrix[Float], op: (Matrix[Float]) => Vector[Float], op_r: (Matrix[Float], Vector[Float]) => Vector[Float]): Unit = {
+  def testWithResultM_V(m1: Matrix[Float], op: Matrix[Float] => Vector[Float], op_r: (Matrix[Float], Vector[Float]) => Vector[Float]): Unit = {
     val length = {
       val r1 = op(m1)
       val r2 = new Vector[Float](r1.length)
@@ -447,7 +467,27 @@ trait TestWithResult extends Assertions with TestUtils {
     }
   }
 
-  def testWithResultM_S(m1: Matrix[Float], op: (Matrix[Float]) => Scalar[Float], op_r: (Matrix[Float], Scalar[Float]) => Scalar[Float]): Unit = {
+  def testWithResultM_Vd(m1: Matrix[Double], op: Matrix[Double] => Vector[Double], op_r: (Matrix[Double], Vector[Double]) => Vector[Double]): Unit = {
+    val length = {
+      val r1 = op(m1)
+      val r2 = new Vector[Double](r1.length)
+      val r3 = op_r(m1, r2)
+      assert(r2 === r3)
+      assert(r2 !== r1)
+      assert(compare(r2.values(), r1.values()) === 0)
+      r1.length
+    }
+    {
+      val r2 = new Vector[Double](length)
+      val r3 = op_r(m1, r2)
+      val r1 = op(m1)
+      assert(r2 === r3)
+      assert(r2 !== r1)
+      assert(compare(r2.values(), r1.values()) === 0)
+    }
+  }
+
+  def testWithResultM_S(m1: Matrix[Float], op: Matrix[Float] => Scalar[Float], op_r: (Matrix[Float], Scalar[Float]) => Scalar[Float]): Unit = {
     {
       val r1 = op(m1)
       val r2 = new Scalar[Float]()
@@ -458,6 +498,25 @@ trait TestWithResult extends Assertions with TestUtils {
     }
     {
       val r2 = new Scalar[Float]()
+      val r3 = op_r(m1, r2)
+      val r1 = op(m1)
+      assert(r2 === r3)
+      assert(r2 !== r1)
+      assert(r2.value() === r1.value())
+    }
+  }
+
+  def testWithResultM_Sd(m1: Matrix[Double], op: Matrix[Double] => Scalar[Double], op_r: (Matrix[Double], Scalar[Double]) => Scalar[Double]): Unit = {
+    {
+      val r1 = op(m1)
+      val r2 = new Scalar[Double]()
+      val r3 = op_r(m1, r2)
+      assert(r2 === r3)
+      assert(r2 !== r1)
+      assert(r2.value() === r1.value())
+    }
+    {
+      val r2 = new Scalar[Double]()
       val r3 = op_r(m1, r2)
       val r1 = op(m1)
       assert(r2 === r3)
@@ -506,7 +565,7 @@ trait TestWithResult extends Assertions with TestUtils {
     }
   }
 
-  def testWithResultMV_M(m1: Matrix[Float], v2: Vector[Float], op: (Matrix[Float], Vector[Float]) => Matrix[Float], op_r: (Matrix[Float], Vector[Float], Matrix[Float]) => Matrix[Float]): Unit = {
+  def testWithResultMV_M[M: ClassTag, V: ClassTag](m1: Matrix[M], v2: Vector[V], op: (Matrix[M], Vector[V]) => Matrix[Float], op_r: (Matrix[M], Vector[V], Matrix[Float]) => Matrix[Float]): Unit = {
     val (rows, columns) = {
       val r1 = op(m1, v2)
       val r2 = new Matrix[Float](r1.rows, r1.columns)
@@ -558,6 +617,26 @@ trait TestWithResult extends Assertions with TestUtils {
     }
     {
       val r2 = new Matrix[Float](rows, columns)
+      val r3 = op_r(m1, s2, r2)
+      val r1 = op(m1, s2)
+      assert(r2 === r3)
+      assert(r2 !== r1)
+      assert(compare(r2.values(), r1.values()) === 0)
+    }
+  }
+
+  def testWithResultMS_Md(m1: Matrix[Double], s2: Double, op: (Matrix[Double], Double) => Matrix[Double], op_r: (Matrix[Double], Double, Matrix[Double]) => Matrix[Double]): Unit = {
+    val (rows, columns) = {
+      val r1 = op(m1, s2)
+      val r2 = new Matrix[Double](r1.rows, r1.columns)
+      val r3 = op_r(m1, s2, r2)
+      assert(r2 === r3)
+      assert(r2 !== r1)
+      assert(compare(r2.values(), r1.values()) === 0)
+      (r1.rows, r1.columns)
+    }
+    {
+      val r2 = new Matrix[Double](rows, columns)
       val r3 = op_r(m1, s2, r2)
       val r1 = op(m1, s2)
       assert(r2 === r3)

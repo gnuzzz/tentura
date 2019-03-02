@@ -1,11 +1,14 @@
 package ru.albemuth.tentura.util
 
 import jcuda.driver.JCudaDriver
+import ru.albemuth.tentura.kernel.JCudaKernel
 
 /**
   * @author Vladimir Kornyshev { @literal <gnuzzz@mail.ru>}
   */
 object Memory {
+
+  private val num_sm = JCudaKernel.numberOfSMs
 
   def check[R](s: String)(block: => R): R = {
     val (total0, free0) = memory()

@@ -40,7 +40,7 @@ object MatrixMulMatrix extends App with MatrixPerformance with TestUtils {
 //  println(s"${Runtime.getRuntime.totalMemory()}/${Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()}")
 
   val multiplyTime = standardConfig measure {
-    val result = a * b
+    val result = a *** b
 //    println(s"${Runtime.getRuntime.totalMemory()}/${Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()}")
   }
 

@@ -1,7 +1,7 @@
 package ru.albemuth.tentura.samples
 
 import org.scalatest.FunSuite
-import ru.albemuth.tentura.tensor.MathFunctions._
+import ru.albemuth.tentura.tensor.Math._
 import ru.albemuth.tentura.tensor.Scalar._
 import ru.albemuth.tentura.tensor.{Matrix, Vector}
 
@@ -23,7 +23,7 @@ class TestLogisticRegression extends FunSuite {
     for (epoch <- 0 to numEpochs) {
 //      val grad = X * (y - sigmoid(w_prev * X))
 //      val w_next = w_prev - grad
-      val w_next = w_prev + alpha * y * X * (1.0f - sigmoid((X * w) |* y))
+      val w_next = w_prev + alpha * y *** X *** (1.0f - sigmoid((X *** w) ***| y))
       w_prev = w_next
     }
   }

@@ -10,10 +10,10 @@ object MeasureSingleMultiplication extends App with MatrixUtils {
   val a = Matrix.of(createMatrix())
   val b = Matrix.of(createMatrix())
   implicit val c = new Matrix[Float](a.rows, b.columns)
-  val warmResult = a * b
+  val warmResult = a *** b
 
   val t1 = System.nanoTime()
-  val result = a * b
+  val result = a *** b
   val t2 = System.nanoTime()
 
   val data = result.values()

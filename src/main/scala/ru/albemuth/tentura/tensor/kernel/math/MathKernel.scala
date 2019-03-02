@@ -3,7 +3,7 @@ package ru.albemuth.tentura.tensor.kernel.math
 import MathKernel.TILE_DIM
 import jcuda.Pointer
 import jcuda.driver.JCudaDriver
-import ru.albemuth.tentura.kernel.{GenericKernel, KernelRegistry, KernelTemplate, Template}
+import ru.albemuth.tentura.kernel._
 import ru.albemuth.tentura.tensor.{Matrix, Vector}
 
 import scala.reflect.ClassTag
@@ -81,6 +81,26 @@ object MathKernel {
     MathKernel.vector_cached(kernel, vector, new Vector[R](vector.length))
   }
 
+  def vector_r[T: ClassTag, R: ClassTag](kernel: MathKernel, vector: Vector[T], param: T, result: Vector[R]): Vector[R] = {
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), JCudaKernel.pointer(Array[T](param)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](result.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def vector_cached[T: ClassTag, R: ClassTag](kernel: MathKernel, vector: Vector[T], param: T, r: => Vector[R]): Vector[R] = {
+    val result = vector.result(kernel, param, r)
+    MathKernel.vector_r(kernel, vector, param, result)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](kernel: MathKernel, vector: Vector[T], param: T): Vector[R] = {
+    MathKernel.vector_cached(kernel, vector, param, new Vector[R](vector.length))
+  }
+
   def vector_r[T: ClassTag, R: ClassTag](kernel: MathKernel, vector: Vector[T], param: Float, result: Vector[R]): Vector[R] = {
     val params = Pointer.to(
       Pointer.to(vector.deviceDataPtr), Pointer.to(Array(param)), Pointer.to(result.deviceDataPtr),
@@ -153,6 +173,18 @@ object MathKernel {
     MathKernel.vector[T, R](template.kernel[T], vector)
   }
 
+  def vector_r[T: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], vector: Vector[T], param: T, result: Vector[R]): Vector[R] = {
+    MathKernel.vector_r[T, R](template.kernel[T], vector, param, result)
+  }
+
+  def vector[T: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], vector: Vector[T], param: T): Vector[R] = {
+    MathKernel.vector[T, R](template.kernel[T], vector, param)
+  }
+
+  def vector_cached[T: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], vector: Vector[T], param: T, r: => Vector[R]): Vector[R] = {
+    MathKernel.vector_cached[T, R](template.kernel[T], vector, param, r)
+  }
+
   def vector_r[T: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], vector: Vector[T], param: Float, result: Vector[R]): Vector[R] = {
     MathKernel.vector_r[T, R](template.kernel[T], vector, param, result)
   }
@@ -207,6 +239,26 @@ object MathKernel {
 
   def matrix[T: ClassTag, R: ClassTag](kernel: MathKernel, matrix: Matrix[T]): Matrix[R] = {
     MathKernel.matrix_cached(kernel, matrix, new Matrix[R](matrix.rows, matrix.columns))
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](kernel: MathKernel, matrix: Matrix[T], param: T, result: Matrix[R]): Matrix[R] = {
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), JCudaKernel.pointer(Array[T](param)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](result.rows * result.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def matrix_cached[T: ClassTag, R: ClassTag](kernel: MathKernel, matrix: Matrix[T], param: T, r: => Matrix[R]): Matrix[R] = {
+    val result = matrix.result(kernel, param, r)
+    MathKernel.matrix_r(kernel, matrix, param, result)
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](kernel: MathKernel, matrix: Matrix[T], param: T): Matrix[R] = {
+    MathKernel.matrix_cached(kernel, matrix, param, new Matrix[R](matrix.rows, matrix.columns))
   }
 
   def matrix_r[T: ClassTag, R: ClassTag](kernel: MathKernel, matrix: Matrix[T], param: Float, result: Matrix[R]): Matrix[R] = {
@@ -279,6 +331,18 @@ object MathKernel {
 
   def matrix[T: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], matrix: Matrix[T]): Matrix[R] = {
     MathKernel.matrix[T, R](template.kernel[T], matrix)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], matrix: Matrix[T], param: T, result: Matrix[R]): Matrix[R] = {
+    MathKernel.matrix_r[T, R](template.kernel[T], matrix, param, result)
+  }
+
+  def matrix_cached[T: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], matrix: Matrix[T], param: T, r: => Matrix[R]): Matrix[R] = {
+    MathKernel.matrix_cached[T, R](template.kernel[T], matrix, param, r)
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], matrix: Matrix[T], param: T): Matrix[R] = {
+    MathKernel.matrix[T, R](template.kernel[T], matrix, param)
   }
 
   def matrix_r[T: ClassTag, R: ClassTag](template: KernelTemplate[MathKernel], matrix: Matrix[T], param: Float, result: Matrix[R]): Matrix[R] = {

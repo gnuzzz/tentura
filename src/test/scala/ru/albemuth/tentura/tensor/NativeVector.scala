@@ -111,7 +111,7 @@ class NativeVector(v: Array[Float]) {
     result
   }
 
-  def *(vector: NativeVector): Float = {
+  def ***(vector: NativeVector): Float = {
     var result = 0.0f
     for (i <- data.indices) {
       result += data(i) * vector.data(i)
@@ -119,7 +119,7 @@ class NativeVector(v: Array[Float]) {
     result
   }
 
-  def *(matrix: NativeMatrix): NativeVector = {
+  def ***(matrix: NativeMatrix): NativeVector = {
     val result = emptyVector(matrix.columns)
 
     for (i <- result.data.indices) {
@@ -128,6 +128,30 @@ class NativeVector(v: Array[Float]) {
         ri += data(j) * matrix.data(j)(i)
       }
       result.data(i) = ri
+    }
+
+    result
+  }
+
+  def *(matrix: NativeMatrix): NativeMatrix = {
+    val result = emptyMatrix(matrix.rows, matrix.columns)
+
+    for (i <- matrix.data.indices) {
+      for (j <- matrix.data(i).indices) {
+        result.data(i)(j) = data(j) * matrix.data(i)(j)
+      }
+    }
+
+    result
+  }
+
+  def *|(matrix: NativeMatrix): NativeMatrix = {
+    val result = emptyMatrix(matrix.rows, matrix.columns)
+
+    for (i <- matrix.data.indices) {
+      for (j <- matrix.data(i).indices) {
+        result.data(i)(j) = data(i) * matrix.data(i)(j)
+      }
     }
 
     result
@@ -143,7 +167,7 @@ class NativeVector(v: Array[Float]) {
     result
   }
 
-  def :*(vector: NativeVector): NativeVector = {
+  def *(vector: NativeVector): NativeVector = {
     val result = emptyVector(length)
 
     for (i <- data.indices) {
@@ -163,11 +187,35 @@ class NativeVector(v: Array[Float]) {
     result
   }
 
-  def :/(vector: NativeVector): NativeVector = {
+  def /(vector: NativeVector): NativeVector = {
     val result = emptyVector(length)
 
     for (i <- data.indices) {
       result.data(i) = data(i) / vector.data(i)
+    }
+
+    result
+  }
+
+  def /(matrix: NativeMatrix): NativeMatrix = {
+    val result = emptyMatrix(matrix.rows, matrix.columns)
+
+    for (i <- matrix.data.indices) {
+      for (j <- matrix.data(i).indices) {
+        result.data(i)(j) = data(j) / matrix.data(i)(j)
+      }
+    }
+
+    result
+  }
+
+  def /|(matrix: NativeMatrix): NativeMatrix = {
+    val result = emptyMatrix(matrix.rows, matrix.columns)
+
+    for (i <- matrix.data.indices) {
+      for (j <- matrix.data(i).indices) {
+        result.data(i)(j) = data(i) / matrix.data(i)(j)
+      }
     }
 
     result
@@ -184,7 +232,7 @@ class NativeVector(v: Array[Float]) {
   def pow(power: Float): NativeVector = {
     val result = emptyVector(length)
     for (i <- data.indices) {
-      result.data(i) = Math.pow(data(i), power).toFloat
+      result.data(i) = java.lang.Math.pow(data(i), power).toFloat
     }
     result
   }
@@ -260,6 +308,11 @@ object NativeVector {
     }
   }
 
+  def randomValue(): Float = {
+    val rnd = new Random
+    rnd.nextGaussian.toFloat * 100
+  }
+
   implicit class ScalarFloat(scalar: Float) {
 
     def -(vector: NativeVector): NativeVector = {
@@ -304,6 +357,40 @@ object NativeVector {
 
       result
     }
+  }
+
+  def sumPar(array: Array[Float], tileDim: Int): Float = {
+    val tile = Array.ofDim[Float](tileDim)
+    val partLength = (array.length + tileDim - 1) / tileDim
+    for (index <- 0 until tileDim) {
+      var sum = 0f
+      for (i <- 0 until partLength) {
+        val valueIndex = i * tileDim + index
+        if (valueIndex < array.length) {
+          val value = array(valueIndex)
+          sum += value
+        }
+      }
+      tile(index) = sum
+    }
+
+    var d = 1
+    while (d < java.lang.Math.min(tileDim, array.length)) {
+      for (index <- 0 until tileDim) {
+        var sum = tile(index)
+        if (index % (d << 1) == 0) {
+          val valueIndex = index + d
+          if (valueIndex < tileDim) {
+            val value = tile(valueIndex)
+            sum += value
+            tile(index) = sum
+          }
+        }
+      }
+      d *= 2
+    }
+
+    tile(0)
   }
 
 }

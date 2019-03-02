@@ -1,6 +1,6 @@
 package ru.albemuth.tentura.tensor.kernel.matrix
 
-import MatrixKernel.{BLOCK_ROWS, TILE_DIM}
+import MatrixKernel.TILE_DIM
 import jcuda.Pointer
 import jcuda.driver.JCudaDriver
 import ru.albemuth.tentura.kernel.{GenericKernel, KernelTemplate}
@@ -14,7 +14,6 @@ import scala.reflect.ClassTag
 abstract class MatrixKernel(override val moduleName: String, override val classifier: String, override val functionName: String) extends GenericKernel(moduleName, classifier, functionName) {
 
   def blockSize(c: Matrix[_]): (Int, Int, Int) = (TILE_DIM, TILE_DIM, 1)
-//  def blockSize(c: Matrix[_]): (Int, Int, Int) = (TILE_DIM, BLOCK_ROWS, 1)
 
   def gridSize(c: Matrix[_]): (Int, Int, Int) =
     ((c.columns - 1) / TILE_DIM + 1, (c.rows - 1) / TILE_DIM + 1, 1)
@@ -38,7 +37,6 @@ abstract class MatrixKernel(override val moduleName: String, override val classi
 object MatrixKernel {
 
   val TILE_DIM = 32
-  val BLOCK_ROWS = 4
 
   def matrix_r[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], result: Matrix[R]): Matrix[R] = {
     val params = Pointer.to(
@@ -256,6 +254,198 @@ object MatrixKernel {
     MatrixKernel.matrix(template.kernel[T], matrix, scalar, r)
   }
 
+  def matrix_r[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Boolean, scalar2: Boolean, result: Matrix[R]): Matrix[R] = {
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Byte](if (scalar1) 1 else 0)), Pointer.to(Array[Byte](if (scalar2) 1 else 0)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Boolean, scalar2: Boolean, r: => Matrix[R]): Matrix[R] = {
+    val result = matrix.result(kernel, (scalar1, scalar2), r)
+    MatrixKernel.matrix_r(kernel, matrix, scalar1, scalar2, result)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Byte, scalar2: Byte, result: Matrix[R]): Matrix[R] = {
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Byte](scalar1)), Pointer.to(Array[Byte](scalar2)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Byte, scalar2: Byte, r: => Matrix[R]): Matrix[R] = {
+    val result = matrix.result(kernel, (scalar1, scalar2), r)
+    MatrixKernel.matrix_r(kernel, matrix, scalar1, scalar2, result)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Char, scalar2: Char, result: Matrix[R]): Matrix[R] = {
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Char](scalar1)), Pointer.to(Array[Char](scalar2)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Char, scalar2: Char, r: => Matrix[R]): Matrix[R] = {
+    val result = matrix.result(kernel, (scalar1, scalar2), r)
+    MatrixKernel.matrix_r(kernel, matrix, scalar1, scalar2, result)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Short, scalar2: Short, result: Matrix[R]): Matrix[R] = {
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Short](scalar1)), Pointer.to(Array[Short](scalar2)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Short, scalar2: Short, r: => Matrix[R]): Matrix[R] = {
+    val result = matrix.result(kernel, (scalar1, scalar2), r)
+    MatrixKernel.matrix_r(kernel, matrix, scalar1, scalar2, result)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Int, scalar2: Int, result: Matrix[R]): Matrix[R] = {
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Int](scalar1)), Pointer.to(Array[Int](scalar2)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Int, scalar2: Int, r: => Matrix[R]): Matrix[R] = {
+    val result = matrix.result(kernel, (scalar1, scalar2), r)
+    MatrixKernel.matrix_r(kernel, matrix, scalar1, scalar2, result)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Long, scalar2: Long, result: Matrix[R]): Matrix[R] = {
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Long](scalar1)), Pointer.to(Array[Long](scalar2)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Long, scalar2: Long, r: => Matrix[R]): Matrix[R] = {
+    val result = matrix.result(kernel, (scalar1, scalar2), r)
+    MatrixKernel.matrix_r(kernel, matrix, scalar1, scalar2, result)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Float, scalar2: Float, result: Matrix[R]): Matrix[R] = {
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Float](scalar1)), Pointer.to(Array[Float](scalar2)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Float, scalar2: Float, r: => Matrix[R]): Matrix[R] = {
+    val result = matrix.result(kernel, (scalar1, scalar2), r)
+    MatrixKernel.matrix_r(kernel, matrix, scalar1, scalar2, result)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Double, scalar2: Double, result: Matrix[R]): Matrix[R] = {
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(Array[Double](scalar1)), Pointer.to(Array[Double](scalar2)), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T], scalar1: Double, scalar2: Double, r: => Matrix[R]): Matrix[R] = {
+    val result = matrix.result(kernel, (scalar1, scalar2), r)
+    MatrixKernel.matrix_r(kernel, matrix, scalar1, scalar2, result)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Boolean, scalar2: Boolean, result: Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix_r(template.kernel[T], matrix, scalar1, scalar2, result)
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Boolean, scalar2: Boolean, r: => Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix(template.kernel[T], matrix, scalar1, scalar2, r)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Byte, scalar2: Byte, result: Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix_r(template.kernel[T], matrix, scalar1, scalar2, result)
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Byte, scalar2: Byte, r: => Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix(template.kernel[T], matrix, scalar1, scalar2, r)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Char, scalar2: Char, result: Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix_r(template.kernel[T], matrix, scalar1, scalar2, result)
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Char, scalar2: Char, r: => Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix(template.kernel[T], matrix, scalar1, scalar2, r)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Short, scalar2: Short, result: Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix_r(template.kernel[T], matrix, scalar1, scalar2, result)
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Short, scalar2: Short, r: => Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix(template.kernel[T], matrix, scalar1, scalar2, r)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Int, scalar2: Int, result: Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix_r(template.kernel[T], matrix, scalar1, scalar2, result)
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Int, scalar2: Int, r: => Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix(template.kernel[T], matrix, scalar1, scalar2, r)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Long, scalar2: Long, result: Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix_r(template.kernel[T], matrix, scalar1, scalar2, result)
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Long, scalar2: Long, r: => Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix(template.kernel[T], matrix, scalar1, scalar2, r)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Float, scalar2: Float, result: Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix_r(template.kernel[T], matrix, scalar1, scalar2, result)
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Float, scalar2: Float, r: => Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix(template.kernel[T], matrix, scalar1, scalar2, r)
+  }
+
+  def matrix_r[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Double, scalar2: Double, result: Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix(template.kernel[T], matrix, scalar1, scalar2, result)
+  }
+
+  def matrix[T: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T], scalar1: Double, scalar2: Double, r: => Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix(template.kernel[T], matrix, scalar1, scalar2, r)
+  }
+
   def matrix_r[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T1], vector: Vector[T2], result: Matrix[R]): Matrix[R] = {
     val params = Pointer.to(
       Pointer.to(matrix.deviceDataPtr), Pointer.to(vector.deviceDataPtr), Pointer.to(result.deviceDataPtr),
@@ -280,6 +470,31 @@ object MatrixKernel {
     MatrixKernel.matrix(template.kernel[T1], matrix, vector, r)
   }
 
+  def matrix2_r[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T1], vector: Vector[T2], result: Matrix[R]): Matrix[R] = {
+    val params = Pointer.to(
+      Pointer.to(matrix.deviceDataPtr), Pointer.to(vector.deviceDataPtr), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns)),
+      Pointer.to(Array[Int](vector.length))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def matrix2[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: MatrixKernel, matrix: Matrix[T1], vector: Vector[T2], r: => Matrix[R]): Matrix[R] = {
+    val result = matrix.result(kernel, vector, r)
+    MatrixKernel.matrix2_r(kernel, matrix, vector, result)
+  }
+
+  def matrix2_r[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T1], vector: Vector[T2], result: Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix2_r(template.kernel[T1], matrix, vector, result)
+  }
+
+  def matrix2[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], matrix: Matrix[T1], vector: Vector[T2], r: => Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix2(template.kernel[T1], matrix, vector, r)
+  }
+
   def matrix_r[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: MatrixKernel, vector: Vector[T1], matrix: Matrix[T2], result: Matrix[R]): Matrix[R] = {
     val params = Pointer.to(
       Pointer.to(vector.deviceDataPtr), Pointer.to(matrix.deviceDataPtr), Pointer.to(result.deviceDataPtr),
@@ -302,6 +517,31 @@ object MatrixKernel {
 
   def matrix[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], vector: Vector[T1], matrix: Matrix[T2], r: => Matrix[R]): Matrix[R] = {
     MatrixKernel.matrix(template.kernel[T1], vector, matrix, r)
+  }
+
+  def matrix2_r[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: MatrixKernel, vector: Vector[T1], matrix: Matrix[T2], result: Matrix[R]): Matrix[R] = {
+    val params = Pointer.to(
+      Pointer.to(vector.deviceDataPtr), Pointer.to(matrix.deviceDataPtr), Pointer.to(result.deviceDataPtr),
+      Pointer.to(Array[Int](vector.length)),
+      Pointer.to(Array[Int](matrix.rows)), Pointer.to(Array[Int](matrix.columns))
+    )
+
+    kernel.launch(params, result)
+
+    result
+  }
+
+  def matrix2[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: MatrixKernel, vector: Vector[T1], matrix: Matrix[T2], r: => Matrix[R]): Matrix[R] = {
+    val result = vector.result(kernel, matrix, r)
+    MatrixKernel.matrix2_r(kernel, vector, matrix, result)
+  }
+
+  def matrix2_r[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], vector: Vector[T1], matrix: Matrix[T2], result: Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix2_r(template.kernel[T1], vector, matrix, result)
+  }
+
+  def matrix2[T1: ClassTag, T2: ClassTag, R: ClassTag](template: KernelTemplate[_ <: MatrixKernel], vector: Vector[T1], matrix: Matrix[T2], r: => Matrix[R]): Matrix[R] = {
+    MatrixKernel.matrix2(template.kernel[T1], vector, matrix, r)
   }
 
   def matrix_r[T1: ClassTag, T2: ClassTag, R: ClassTag](kernel: MatrixKernel, vector1: Vector[T1], vector2: Vector[T2], result: Matrix[R]): Matrix[R] = {

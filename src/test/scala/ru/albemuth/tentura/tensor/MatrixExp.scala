@@ -5,7 +5,7 @@ import jcuda.driver.JCudaDriver
 import org.scalatest.FunSuiteLike
 import ru.albemuth.tentura.kernel.JCudaKernel
 import ru.albemuth.tentura.performance.MatrixPerformance
-import ru.albemuth.tentura.tensor.MathFunctions.sigmoid
+import ru.albemuth.tentura.tensor.Math.sigmoid
 
 /**
   * @author Vladimir Kornyshev { @literal <gnuzzz@mail.ru>}
@@ -175,13 +175,13 @@ object MatrixMulMatrix extends App with MatrixPerformance {
   val a = Matrix.of(NativeMatrix.matrixData[Float](rows, columns))
   val b = Matrix.of(NativeMatrix.matrixData[Float](columns, rows))
   val time = standardConfig measure {
-    val result = a * b
+    val result = a *** b
   }
 
   println(s"matrix * matrix time: $time")
 }
 
-object MatrixMulMatrixExp extends App with MatrixPerformance with TestUtils with FunSuiteLike {
+object MatrixDotMatrixExp$ extends App with MatrixPerformance with TestUtils with FunSuiteLike {
   //raw matrix * matrix time: 1271.4413795599999 ms: 16, 8     //224
   //raw matrix * matrix time: 1037.43175124 ms: 16, 4          //197
   //raw matrix * matrix time:                 : 32, 32         //235

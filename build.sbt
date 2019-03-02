@@ -2,7 +2,7 @@ organization := "ru.albemuth.tentura"
 
 name := "tentura"
 
-version := "0.0.8"
+version := "0.0.9"
 
 scalaVersion := "2.12.4"
 
@@ -22,8 +22,7 @@ libraryDependencies ++= {
     "org.jcuda"                   % "jcurand"                      % jcudaVersion,
     "org.jcuda"                   % "jnvgraph"                     % jcudaVersion,
     "org.jcuda"                   % "jcudnn"                       % jcudaVersion,
-    "org.jcuda"                   % "jcudpp"                       % jcudaVersion,
-//    "org.jcuda"                   % "jcudpp-natives"               % jcudaVersion classifier "windows-x86_64",
+//    "ru.albemuth.jcuda"           % "jcusegsort"                   % jcudaVersion,
     "org.slf4j"                   % "slf4j-log4j12"                % "1.7.7",
     //"com.typesafe.scala-logging"  %   "scala-logging_2.12.0-M4"  % "3.1.0",
     "org.scalatest"               %% "scalatest"                   % "3.0.1"   % "test",

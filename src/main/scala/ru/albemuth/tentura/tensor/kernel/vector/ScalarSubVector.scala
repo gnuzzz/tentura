@@ -8,7 +8,7 @@ import ru.albemuth.tentura.kernel.{KernelRegistry, Template}
 class ScalarSubVector(override val moduleName: String, override val classifier: String, override val functionName: String) extends VectorKernel(moduleName, classifier, functionName) with Template[ScalarSubVector] {
 
   def this() {
-    this("ru/albemuth/tentura/tensor/kernel/vector/Vector", KernelRegistry.classifier(classOf[ScalarSubVector]), "scalarSubVector")
+    this("ru/albemuth/tentura/tensor/kernel/vector/Vector2Scalar", KernelRegistry.classifier(classOf[ScalarSubVector]), "scalarSubVector")
   }
 
   def materialize(functionImplName: String): ScalarSubVector = new ScalarSubVector(moduleName, classifier, functionImplName)

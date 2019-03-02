@@ -7,17 +7,14 @@ import scala.reflect.ClassTag
 /**
   * @author Vladimir Kornyshev { @literal <gnuzzz@mail.ru>}
   */
-class TestSimple extends FunSuite {
-
-  val ROWS = 512
-  val COLUMNS = 128
+class TestSimple extends FunSuite with TestUtils {
 
   test("test") {
-    val a = Matrix.of[Float](NativeMatrix.matrixData(ROWS, COLUMNS))
-    val b = new Vector[Float](NativeVector.vectorData(COLUMNS))
+    val a = Matrix.of(NativeMatrix.matrixData[Float](ROWS, COLUMNS))
+    val b = new Vector(NativeVector.vectorData(COLUMNS))
 
     for (i <- 0 until 10) {
-      val result = a * b
+      val result = a *** b
       println(result)
     }
   }

@@ -1,11 +1,9 @@
 package ru.albemuth.tentura.sort
 
-import jcuda.{Pointer, Sizeof}
-import jcuda.driver.JCudaDriver
-import jcuda.jcudpp._
-import jcuda.runtime.{JCuda, cudaMemcpyKind}
-import ru.albemuth.tentura.kernel.JCudaKernel
-import ru.albemuth.tentura.kernel.JCudaKernel.sizeOf
+import java.util
+
+import ru.albemuth.jcuda.jcusegsort.{Datatype, Sorting}
+import ru.albemuth.tentura.tensor.{NativeVector, Vector}
 
 
 /**
@@ -13,6 +11,22 @@ import ru.albemuth.tentura.kernel.JCudaKernel.sizeOf
   */
 object TestSort extends App {
 
+  def assertArrayEquals(a1: Array[Float], a2: Array[Float]): Unit = {
+    if (!(a1.size == a2.size && a1.zip(a2).forall(p => p._1 == p._2))) throw new IllegalStateException("arrays not equal")
+  }
+
+  val N = 40000000
+  val data = NativeVector.vectorData(N)
+  val keys = Vector.of(data)
+//  Sorting.sort(keys.deviceDataPtr, Datatype.FLOAT, keys.length)
+//  val sortedKeys = keys.values()
+  val sortedKeys = Vector.sort(keys)
+  val hostSortedKeys = data.clone
+  util.Arrays.sort(hostSortedKeys)
+//  assertArrayEquals(sortedKeys, hostSortedKeys)
+  assertArrayEquals(sortedKeys.values(), hostSortedKeys)
+
+/*
   val n = 10
   val data: Array[Int] = Array.fill(n)((Math.random() * 100).toInt)
 //  val data: Array[Long] = Array.fill(n)((Math.random() * 100).toLong) //not works
@@ -62,4 +76,5 @@ object TestSort extends App {
   JCuda.cudaFree(deviceDataPtr)
 
   data.foreach(println(_))
+  */
 }
