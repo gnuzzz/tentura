@@ -20,7 +20,7 @@ public class Statistics {
         this.listener = Listener.NOP;
     }
 
-    public Statistics(String name, Listener listener) {
+    public Statistics(String name, Statistics.Listener listener) {
         this.name = name;
         this.listener = listener;
     }
